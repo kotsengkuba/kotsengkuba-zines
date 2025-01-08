@@ -1,9 +1,8 @@
 const fontName = 'fonts/VT323-Regular.ttf';
-const asciiFontName = 'fonts/VT323-Regular.ttf';
-const density = '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\|()1{}[]?-_+~<>i!lI;:,"^`.   ';
+const density = '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?-_+~<>i!lI;:,"^`.   ';
 const fps = 24;
 
-const title = "para llevar coming soon";
+const title = "coming soon...";
 
 const shadowOffset = 5;
 
@@ -13,26 +12,51 @@ let myBuffer;
 let imageBuffers = [];
 let titleX = 0;
 let titleY = 0;
-let titleBuffer;
 let sampleImage;
+
+let characterSet; // The character set object, contains the texture of the characters to be used in the shader
+
+let slidesShader;
+let shaderLayer;
+let characterSetLayer;
+let topLayer;
+let textSrc;
 
 function preload() {  
   font = loadFont(fontName);
-  sampleImage = loadImage("/assets/sample_image_128.jpg")
+  sampleImage = loadImage("/assets/sample_image_128.jpg");
+  slidesShader = loadShader("base.vert", "asciishader.frag");
 }
 
 function setup() {
   p5Canvas = createCanvas(windowWidth, windowHeight, WEBGL);
   p5Canvas.parent("main-div");
+
+  shaderLayer = createGraphics(width, height, WEBGL);
+  characterSetLayer = createGraphics(width, height, WEBGL);
+  topLayer = createGraphics(width, height, WEBGL);
+  textSrc = createGraphics(width*2, height*2, WEBGL);
+
   textFont(font);
+  shaderLayer.textFont(font);
+  topLayer.textFont(font);
   frameRate(fps);
   background(255);
+
+  shaderLayer.shader(slidesShader);
+
+  textSrc.textFont(font);
+
+  characterSet = new CharacterSet({font: font, fontSize: 80, characters: density });
+  topLayer.sampleTextbox = new TextBox({text: "hello world", font: font, fontSize: 12, width: 80, padding: 10, hasShadow: true}); 
+  topLayer.titleTextbox = new TextBox({text: title, font: font, fontSize: 32, width: 200, padding: 10, hasShadow: false});
+
   sampleImage.loadPixels();
   imageBuffers.push(imageToAsciiAsBuffer(sampleImage, floor(sampleImage.width/30)));
-  titleBuffer = createFramebuffer();
 }
 
 function mouseClicked() {
+  // track clicks
   if(mouseY < 20 && clickIndex > 0) {
     clickIndex--;
   } else {
@@ -42,93 +66,46 @@ function mouseClicked() {
 
 function draw() {
   clear();
-  push();
-  translate(-windowWidth/2, -windowHeight/2);
+  // fun animation
+  topLayer.rotateX(frameCount/1000);
+  topLayer.rotateY(frameCount/2000);
+  topLayer.rotateZ(frameCount/2000);
   
+  if(frameCount % (fps) == 0) {
+    titleX = random(50, windowWidth);
+    titleY = random(50, windowHeight);
+  }
+  
+
+  /*
   for(let i = 0; i < imageBuffers.length; i++) {
     image(imageBuffers[i], i*100, 0);
   }
   
-  if(frameCount % fps == 0) {
-    titleX = random(50, windowWidth);
-    titleY = random(50, windowHeight);
-    drawTitle();
-  }
-  image(titleBuffer, 0, 0);
+  */
+
+  shaderLayer.clear();
+  shaderLayer.rect(0, 0, 1, 1);
+
+  slidesShader.setUniform('tex0', sampleImage);
+  slidesShader.setUniform('charSet2D', characterSet.getTexture());
+  let offsetX = map(mouseX, 0, width, -50, 50);
+  let offsetY = map(mouseY, 0, height, 0.001, 0.05);
+  slidesShader.setUniform('offset', [offsetX, offsetY]);
+  slidesShader.setUniform('time', frameCount * 0.025);
+  slidesShader.setUniform('tiles', map(mouseX, 0, width, 200, 1));
+
+  push();
+  translate(-windowWidth/2, -windowHeight/2);
+  image(shaderLayer, 0, 0);
+  topLayer.sampleTextbox.draw(topLayer, mouseX, mouseY);
+  topLayer.titleTextbox.draw(topLayer, titleX, titleY);
+  image(topLayer, 0, 0);
+  
   pop();
 }
 
-function drawTitle() {
-  fill(100);
-  textSize(24);
-  textAlign(LEFT, TOP);
-  textWrap(WORD);
-  let w = textWidth(title) + 10;
-
-  titleBuffer = drawTextbox(title, titleX, titleY, w, 5);
-}
-
-function drawTextbox(t, x, y, width, leftPadding){
-  let newLines = textToWidth(t, width).split("\n");
-  let tempBuffer = createFramebuffer();
-  tempBuffer.begin();
-  translate(-windowWidth/2, -windowHeight/2);
-  fill(0);
-  noStroke();
-  rect(shadowOffset+x-leftPadding, shadowOffset+y, width+leftPadding, newLines.length*textSize());
-  fill('white');
-  stroke(0);
-  strokeWeight(2);
-  rect(x-leftPadding, y, width+leftPadding, newLines.length*textSize());
-  for(let i = 0; i<newLines.length; i++) {
-    fill(100);
-    text(newLines[i], x, y + i*textSize()); 
-  }
-  tempBuffer.end();
-  return tempBuffer;
-}
-
-function textToWidth(text, width) {
-  let lines = text.split("\n");
-  modified_text = "";
-  w = 200;
-  for(let i = 0; i < lines.length; i++) {
-    let line = lines[i];
-    let words = line.split(" ");
-    let testLine = "";
-    for(let j = 0; j < words.length; j++) {
-      let word = words[j];
-      if(textWidth(word) > width) {
-        modified_text = modified_text + "\n";
-        testLine = "";
-        for(let k = 0; k < word.length; k++) {
-          let letter = word.charAt(k);
-          testLine = testLine + letter;
-          let metrics = textWidth(testLine);
-          if(metrics < w) {
-            modified_text = modified_text + letter;
-          } else {
-            modified_text = modified_text + "\n";
-            testLine = "";
-          }
-        }
-      } else {
-        testLine = testLine + ' ' + word;
-        let metrics = textWidth(testLine);
-
-        if(metrics <= width) {
-          modified_text = modified_text + word + ' ';
-        } else {
-          modified_text = modified_text + "\n" + word + ' ';
-          testLine = word;
-        }
-      }      
-    }
-    modified_text = modified_text + "\n";
-  }
-  return modified_text;
-}
-
+// ---------------------------------- //
 function imageToAsciiAsBuffer(im, stepSize) {
   let inputImage = im;
   if(stepSize > inputImage.width) {
@@ -163,8 +140,6 @@ function imageToAsciiAsBuffer(im, stepSize) {
       text(c, i, j);
     }
   }
-
-  //image(im, 0, 0);
   tempBuffer.end();
   return tempBuffer;
 }
