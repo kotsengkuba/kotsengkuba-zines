@@ -17,10 +17,11 @@ class TextBox {
         this.textToWidth(this.text, this.width);
     }
 
-    draw(gfx, x, y) {
+    draw(gfx, x, y, isClear = false) {
         let newLines = this.text.split("\n");
         
         gfx.push();
+        if(isClear) gfx.clear();
         gfx.translate((-windowWidth/2) + 1, (-windowHeight/2) + 1);
         gfx.textFont(this.font);
         gfx.textSize(this.fontSize);
@@ -39,12 +40,12 @@ class TextBox {
         gfx.rect(x, y, this.width+this.padding, newLines.length*this.fontSize);
         gfx.translate(0,0,0.5);
         for(let i = 0; i<newLines.length; i++) {
-            gfx.fill(100);
+            gfx.fill(50);
             gfx.text(newLines[i], x+this.padding, y + i*this.fontSize); 
         }
         gfx.translate(0,0,-1.5);
         for(let i = 0; i<newLines.length; i++) {
-            gfx.fill(100);
+            gfx.fill(50);
             gfx.text(newLines[i], x+this.padding, y + i*this.fontSize); 
         }
         gfx.pop();
