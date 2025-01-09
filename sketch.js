@@ -1,5 +1,6 @@
 const fontName = 'fonts/VT323-Regular.ttf';
-const density = '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?-_+~<>i!lI;:,"^`.   ';
+//const fontName = 'fonts/CutiveMono-Regular.ttf';
+const density = '#$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?-_+~<>i!lI;:,"^`.  ';
 const fps = 24;
 
 const title = "coming soon...";
@@ -18,6 +19,7 @@ let characterSet; // The character set object, contains the texture of the chara
 
 let slidesShader;
 let shaderLayer;
+let imageLayer;
 let characterSetLayer;
 let topLayer;
 let textSrc;
@@ -25,7 +27,8 @@ let textSrc;
 function preload() {  
   font = loadFont(fontName);
   sampleImage = loadImage("/assets/sample_image_128.jpg");
-  slidesShader = loadShader("base.vert", "asciishader.frag");
+  //slidesShader = loadShader("base.vert", "asciishader.frag");
+  slidesShader = loadShader("base.vert", "shader.frag");
 }
 
 function setup() {
@@ -33,6 +36,7 @@ function setup() {
   p5Canvas.parent("main-div");
 
   shaderLayer = createGraphics(width, height, WEBGL);
+  imageLayer = createGraphics(width, height, WEBGL);
   characterSetLayer = createGraphics(width, height, WEBGL);
   topLayer = createGraphics(width, height, WEBGL);
   textSrc = createGraphics(width*2, height*2, WEBGL);
@@ -41,18 +45,25 @@ function setup() {
   shaderLayer.textFont(font);
   topLayer.textFont(font);
   frameRate(fps);
-  background(255);
+  background(0);
 
   shaderLayer.shader(slidesShader);
 
   textSrc.textFont(font);
 
-  characterSet = new CharacterSet({font: font, fontSize: 80, characters: density });
+  characterSet = new CharacterSet({font: font, fontSize: 24, characters: density });
   topLayer.sampleTextbox = new TextBox({text: "hello world", font: font, fontSize: 12, width: 80, padding: 10, hasShadow: true}); 
   topLayer.titleTextbox = new TextBox({text: title, font: font, fontSize: 32, width: 200, padding: 10, hasShadow: false});
 
+  imageLayer.push();
+  imageLayer.translate(-windowWidth/2, -windowHeight/2);
+  imageLayer.background(255);
+  sampleImageW = windowWidth/2;
+  sampleImageH = (sampleImageW/ sampleImage.width) * sampleImage.height;
+  imageLayer.image(sampleImage, (windowWidth - sampleImageW)/2, (windowHeight - sampleImageH)/2, sampleImageW, sampleImageH);
+  imageLayer.pop();
+
   sampleImage.loadPixels();
-  imageBuffers.push(imageToAsciiAsBuffer(sampleImage, floor(sampleImage.width/30)));
 }
 
 function mouseClicked() {
@@ -75,71 +86,48 @@ function draw() {
     titleX = random(50, windowWidth);
     titleY = random(50, windowHeight);
   }
-  
 
-  /*
-  for(let i = 0; i < imageBuffers.length; i++) {
-    image(imageBuffers[i], i*100, 0);
-  }
-  
-  */
+  let fontSize = floor(mouseX/20);
+  if(fontSize > 4) characterSet.setFontSize(fontSize);
 
   shaderLayer.clear();
   shaderLayer.rect(0, 0, 1, 1);
 
-  slidesShader.setUniform('tex0', sampleImage);
-  slidesShader.setUniform('charSet2D', characterSet.getTexture());
-  let offsetX = map(mouseX, 0, width, -50, 50);
-  let offsetY = map(mouseY, 0, height, 0.001, 0.05);
-  slidesShader.setUniform('offset', [offsetX, offsetY]);
-  slidesShader.setUniform('time', frameCount * 0.025);
-  slidesShader.setUniform('tiles', map(mouseX, 0, width, 200, 1));
+  //console.log([characterSet.getColumns(), characterSet.getRows(), characterSet.getTotalChars()]);
+  slidesShader.setUniform('u_characterTexture', characterSet.getTexture()); // The 2D texture containing the character set
+  slidesShader.setUniform('u_charsetCols', float(characterSet.getColumns())); // The number of columns in the charset texture
+  slidesShader.setUniform('u_charsetRows', float(characterSet.getRows())); // The number of rows in the charset texture
+  slidesShader.setUniform('u_totalChars', characterSet.getTotalChars()); // The total number of characters in the character set texture
+
+  slidesShader.setUniform('u_simulationTexture', imageLayer); // The texture containing the simulation, which is used to create the ASCII character grid
+
+  slidesShader.setUniform('u_gridOffsetDimensions', [0, 0]); // The dimensions of the grid offset in pixels
+
+  let cell = characterSet.getMaxGlyphDimensions(characterSet.fontSize);
+  let gridDimensions = [floor(windowWidth/cell.width), float(windowHeight/cell.height)];
+  slidesShader.setUniform('u_gridPixelDimensions' , [width, height]); // The dimensions of the grid cell in pixels (total width and height)
+  slidesShader.setUniform('u_gridDimensions', gridDimensions); // The dimensions of the grid in number of cells
+
+  slidesShader.setUniform('u_characterColor', [0.0, 0.0, 0.0]); // The color of the ASCII characters
+  slidesShader.setUniform('u_characterColorMode', 0); // The color mode (0 = image color, 1 = single color)
+  slidesShader.setUniform('u_backgroundColor', [0.0, 1.0, 0.3]); // The background color of the ASCII art
+  slidesShader.setUniform('u_backgroundColorMode', 0); // The background color mode (0 = image color, 1 = single color)
+
+  slidesShader.setUniform('u_invertMode', 0); // The character invert mode (0 = normal, 1 = inverted)
+
+  slidesShader.setUniform('u_randBrightness', [getRandomFloat(0.4, 0.6), getRandomFloat(0.4, 0.9), getRandomFloat(0.4, 0.6)]); // rand
 
   push();
   translate(-windowWidth/2, -windowHeight/2);
   image(shaderLayer, 0, 0);
-  topLayer.sampleTextbox.draw(topLayer, mouseX, mouseY);
+  //image(characterSet.getTexture(), 0, 0);
+
+  //topLayer.sampleTextbox.draw(topLayer, mouseX, mouseY);
   topLayer.titleTextbox.draw(topLayer, titleX, titleY);
   image(topLayer, 0, 0);
-  
   pop();
 }
 
-// ---------------------------------- //
-function imageToAsciiAsBuffer(im, stepSize) {
-  let inputImage = im;
-  if(stepSize > inputImage.width) {
-    stepSize = inputImage.width;
-  }
-  console.log(stepSize);
-  let tSize = 12;
-  let whiteMin = 0;
-  let whiteMax = 255;
-  let dens = density;
-  let scale = 10;
-
-  let tempBuffer = createFramebuffer();
-  tempBuffer.begin();
-  translate(-windowWidth/2, -windowHeight/2);
-  fill(100);
-
-  for (let j = 0; j < inputImage.height; j+=stepSize) {
-    let row = "0";
-    for (let i = 0; i < inputImage.width; i+=stepSize) {
-      const pixelIndex = (i + j * inputImage.width) *4;
-      const r = inputImage.pixels[pixelIndex + 0];
-      const g = inputImage.pixels[pixelIndex + 1];
-      const b = inputImage.pixels[pixelIndex + 2];
-
-      const avg = (r + g + b) / 3;
-      fill(r,g,b);
-      textSize(tSize);
-      const len = dens.length;
-      const charIndex = floor(map(avg, whiteMin, whiteMax, 0, len));
-      const c = dens.charAt(charIndex);
-      text(c, i, j);
-    }
-  }
-  tempBuffer.end();
-  return tempBuffer;
+function getRandomFloat(min, max) {
+  return Math.random() * (max - min) + min;
 }

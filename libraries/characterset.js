@@ -9,7 +9,7 @@ class CharacterSet {
      * @param {string} characters - The characters to include in the character set.
      */
     constructor({ font, fontSize = 16, characters }) {
-        this.buffer = createGraphics(width, height, WEBGL);  // Create a graphics buffer
+        //this.buffer = createGraphics(width, height, WEBGL);  // Create a graphics buffer
         this.font = font;
         this.fontSize = fontSize;
         this.characters = Array.from(characters);
@@ -37,6 +37,14 @@ class CharacterSet {
                 height: Math.ceil(Math.max(maxDims.height, bounds.y2 - bounds.y1))
             };
         }, { width: 0, height: 0 });
+        
+        /*return this.glyphs.reduce((maxDims, glyph) => {
+            const bounds = glyph.getPath(0, 0, fontSize).getBoundingBox();
+            return {
+                width: Math.floor(Math.max(maxDims.width, bounds.x2-(0.1*this.fontSize) - bounds.x1)),
+                height: Math.floor(Math.max(maxDims.height, bounds.y2-(0.1*this.fontSize) - bounds.y1))
+            };
+        }, { width: 0, height: 0 });*/
     }
 
     setFontObject(font) {
@@ -83,6 +91,12 @@ class CharacterSet {
 
         let dimensions = this.getMaxGlyphDimensions(fontSize); // Calculate the dimensions of the texture
 
+        if (!this.buffer) { // Initially create the framebuffer containing the unique characters. Otherwise, resize the existing texture.
+            this.buffer = createGraphics(dimensions.width * this.charsetCols , dimensions.height * this.charsetRows, WEBGL);
+        } else {
+            //this.buffer.resize(dimensions.width * this.charsetCols, dimensions.height * this.charsetRows);
+        }
+
         this.buffer.clear();
         this.buffer.textFont(this.font);
         this.buffer.fill(0);
@@ -98,12 +112,37 @@ class CharacterSet {
             const y = dimensions.height * row;
 
             const character = this.characters[i];
-            //this.buffer.text(character, x - ((dimensions.width * this.charsetCols) / 2), y - ((dimensions.height * this.charsetRows) / 2));
-            this.buffer.text(character, x - (this.buffer.width / 2), y - (this.buffer.height / 2));
+            this.buffer.text(character, x - ((dimensions.width * this.charsetCols) / 2), y - ((dimensions.height * this.charsetRows) / 2));
+            //this.buffer.text(character, x - (this.buffer.width / 2), y - (this.buffer.height / 2));
         }
     }
 
     getTexture() {
         return this.buffer;
     }
+
+    getTiles() {
+        return this.charsetCols;
+    }
+    getColumns() {
+        return this.charsetCols;
+    }
+    getRows() {
+        return this.charsetRows;
+    }
+    getCharSize() {
+        return this.fontSize;
+    }
+    getTotalWidth() {
+        let dimensions = this.getMaxGlyphDimensions(this.fontSize); // Calculate the dimensions of the texture
+        return dimensions.width * this.charsetCols; 
+    }
+    getTotalHeight() {
+        let dimensions = this.getMaxGlyphDimensions(this.fontSize); // Calculate the dimensions of the texture
+        return dimensions.height * this.charsetRows; 
+    }
+    getTotalChars() {
+        return this.characters.length;
+    }
+
 }
