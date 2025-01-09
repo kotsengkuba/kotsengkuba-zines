@@ -1,34 +1,37 @@
 const fontName = 'fonts/VT323-Regular.ttf';
 //const fontName = 'fonts/CutiveMono-Regular.ttf';
-const density = '#$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?-_+~<>i!lI;:,"^`.  ';
+const asciiSet = '#$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?-_+~<>i!lI;:,"^`.  ';
 const fps = 24;
 
 const title = "coming soon...";
 
 const shadowOffset = 5;
 
-var clickIndex = 0;
+let clickIndex = 0;
+let fileNames = ["titlepage.txt", "pages.txt", "pages_2.txt"];
 
-let myBuffer;
-let imageBuffers = [];
+let textBoxes = [];
 let titleX = 0;
 let titleY = 0;
 let sampleImage;
+let asciiSize = 24;
+let defaultFontSize = 18;
 
 let characterSet; // The character set object, contains the texture of the characters to be used in the shader
 
 let slidesShader;
 let shaderLayer;
 let imageLayer;
-let characterSetLayer;
 let topLayer;
-let textSrc;
+
+let currScene;
+let loadedImages = [];
 
 function preload() {  
   font = loadFont(fontName);
+  scenesData = loadStrings("/content/" + fileNames[0]);
   sampleImage = loadImage("/assets/STREETS_02_480.png");
   sampleImage_2 = loadImage("/assets/STREETS_06_480.png");
-  //slidesShader = loadShader("base.vert", "asciishader.frag");
   slidesShader = loadShader("base.vert", "shader.frag");
 }
 
@@ -38,9 +41,9 @@ function setup() {
 
   shaderLayer = createGraphics(width, height, WEBGL);
   imageLayer = createGraphics(width, height, WEBGL);
-  characterSetLayer = createGraphics(width, height, WEBGL);
   topLayer = createGraphics(width, height, WEBGL);
-  textSrc = createGraphics(width*2, height*2, WEBGL);
+
+  loadSceneFromFile();
 
   textFont(font);
   shaderLayer.textFont(font);
@@ -50,23 +53,9 @@ function setup() {
 
   shaderLayer.shader(slidesShader);
 
-  textSrc.textFont(font);
+  characterSet = new CharacterSet({font: font, fontSize: asciiSize, characters: asciiSet });
 
-  characterSet = new CharacterSet({font: font, fontSize: 24, characters: density });
-  topLayer.sampleTextbox = new TextBox({text: "A fun thing to do in Spain as a Filipino is to learn/relearn about Jose Rizal. Rizal is one of the national heroes of the Philippines (apparently wala palang official national hero). His life and works are taught in high school and college.\n\nTLDR: Rizal, who went to Europe to study medicine, wrote novels that inspired the revolution against the spanish colonizers. Eventually leading to “independence”.", font: font, fontSize: 14, width: (windowWidth/4) - 50, padding: 10, hasShadow: true}); 
-  topLayer.sampleTextbox_2 = new TextBox({text: "These streets are also vibrant places of activism. Calls for accountability and peace in Palestine and Lebanon. Pushback against demolition of Antigga Sala, an abandoned building turned community space.", font: font, fontSize: 14, width: (windowWidth/4) - 50, padding: 10, hasShadow: true}); 
-  topLayer.titleTextbox = new TextBox({text: title, font: font, fontSize: 32, width: 200, padding: 10, hasShadow: false});
-
-  imageLayer.push();
-  imageLayer.translate(-windowWidth/2, -windowHeight/2);
-  imageLayer.background(255);
-  sampleImageW = (windowWidth/2);
-  sampleImageH = (sampleImageW/ sampleImage.width) * sampleImage.height;
-  imageLayer.image(sampleImage, 0, 0, sampleImageW - 4, sampleImageH);
-  imageLayer.image(sampleImage_2, sampleImageW, random(0, 50) + (windowHeight - sampleImageH)/2, sampleImageW - 4, sampleImageH);
-  imageLayer.pop();
-
-  sampleImage.loadPixels();
+  /*sampleImage.loadPixels();*/
 }
 
 function mouseClicked() {
@@ -76,6 +65,9 @@ function mouseClicked() {
   } else {
     clickIndex++;      
   }
+
+  scenesData = loadStrings("/content/" + fileNames[clickIndex%fileNames.length], loadSceneFromFile);
+  topLayer.clear();
 }
 
 function draw() {
@@ -112,29 +104,109 @@ function draw() {
   slidesShader.setUniform('u_gridDimensions', gridDimensions); // The dimensions of the grid in number of cells
 
   slidesShader.setUniform('u_characterColor', [0.0, 0.0, 0.0]); // The color of the ASCII characters
-  slidesShader.setUniform('u_characterColorMode', 1); // The color mode (0 = image color, 1 = single color)
+  slidesShader.setUniform('u_characterColorMode', 0); // The color mode (0 = image color, 1 = single color)
   slidesShader.setUniform('u_backgroundColor', [1.0, 1.0, 1.0]); // The background color of the ASCII art
   slidesShader.setUniform('u_backgroundColorMode', 0); // The background color mode (0 = image color, 1 = single color)
 
   slidesShader.setUniform('u_invertMode', 0); // The character invert mode (0 = normal, 1 = inverted)
 
-  slidesShader.setUniform('u_randBrightness', [0.2, 0.2, 0.8]); // rand
-  //slidesShader.setUniform('u_randBrightness', [getRandomFloat(0.8, 0.9), getRandomFloat(0.2, 0.4), getRandomFloat(0.2, 0.4)]); // rand
+  //slidesShader.setUniform('u_randBrightness', [0.22, 0.12, 0.12]); // rand
+  slidesShader.setUniform('u_randBrightness', [random(0.1, 0.125), random(0.1, 0.625), random(0.1, 0.12)]); // rand
 
   push();
-  
   translate(-windowWidth/2, -windowHeight/2);
-  //background(0);
   image(shaderLayer, 0, 0);
-  //image(characterSet.getTexture(), 0, 0);
-
-  topLayer.sampleTextbox.draw(topLayer, 10, 100, true);
-  topLayer.sampleTextbox_2.draw(topLayer, windowWidth/2, 500, false);
-  //topLayer.titleTextbox.draw(topLayer, titleX, titleY);
+  for(let i = 0; i < textBoxes.length; i++) {
+    textBoxes[i].draw(topLayer, i * 220, 10, false);
+  }
   image(topLayer, 0, 0);
+  loadImageLayer();
   pop();
 }
 
-function getRandomFloat(min, max) {
-  return Math.random() * (max - min) + min;
+function loadSceneFromFile() {
+  let line = scenesData[0];
+  if(line.startsWith("# "))
+    currScene = new Scene({title: line});
+  else
+    currScene = new Scene({title: "Untitled"});
+
+  let tempPage;
+
+  for (let i = 0; i < scenesData.length; i++) {
+    let line = scenesData[i];
+
+    if(line.startsWith("## ")){
+      if(tempPage == undefined) { // first
+        tempPage = {
+          "title": "",
+          "text": []
+        };
+        tempPage.title = line;
+      } else {
+        currScene.addPage(tempPage.title, tempPage.text);
+        tempPage = {
+          "title": line,
+          "text": []
+        };
+      }     
+      
+    } else if (line.startsWith("# ")) {
+      // what to do? can the file have multiple scenes??
+    } else if(line.startsWith("!")) {
+      const start = line.indexOf("(") + 1;
+      const end = line.indexOf(")");
+      const imgFileName = line.substring(start, end);
+      currScene.addImage(imgFileName);
+    } else {
+      tempPage.text.push(line);
+    }
+  }
+  if(tempPage.title.length > 0) {
+    currScene.addPage(tempPage.title, tempPage.text);
+  }
+
+  loadedImages = [];
+  for(let i = 0; i < currScene.images.length; i++) {
+    let tempImage = loadImage(currScene.images[i], loadImagesCallback);
+  }
+
+  loadTextBoxes();
+}
+
+function loadImagesCallback(data) {
+  data.loadPixels();
+  loadedImages.push(data);
+  console.log(data);
+
+  if(loadedImages.length == currScene.getImageCount()) {
+    console.log("all loaded");
+    loadImageLayer();
+  }
+}
+
+function loadTextBoxes() {
+  textBoxes = [];
+  for(let i = 0; i < currScene.getPageCount(); i++) {
+    let tempPage = currScene.getPage(i);
+    let tempTextBox = new TextBox({text: tempPage.title, font: font, fontSize: defaultFontSize, width: 200, padding: 10, hasShadow: true});
+    textBoxes.push(tempTextBox);
+    
+    for(let j = 0; j < tempPage.texts.length; j++) {
+      let tempTextBox = new TextBox({text: tempPage.texts[j], font: font, fontSize: defaultFontSize, width: 200, padding: 10, hasShadow: true});
+      textBoxes.push(tempTextBox);
+    }
+  }
+}
+
+function loadImageLayer() {
+  imageLayer.clear();
+  imageLayer.push();
+  imageLayer.translate(-windowWidth/2, -windowHeight/2);
+  let lastWidth = 0;
+  for(let i = 0; i < loadedImages.length; i++) {
+    imageLayer.image(loadedImages[i], lastWidth, 0);
+    lastWidth += loadedImages[i].width;
+  }
+  imageLayer.pop();
 }
