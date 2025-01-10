@@ -1,21 +1,37 @@
-const fontName = 'fonts/VT323-Regular.ttf';
+const fontName = 'fonts/CutiveMono-Regular.ttf';
 //const fontName = 'fonts/CutiveMono-Regular.ttf';
 const asciiSet = '#$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?-_+~<>i!lI;:,"^`.  ';
-const fps = 24;
+const fps = 12;
 
 const title = "coming soon...";
 
 const shadowOffset = 5;
 
 let clickIndex = 0;
-let fileNames = ["titlepage.txt", "pages.txt", "pages_2.txt"];
+let fileNames = [
+  "titlepage.txt", 
+  "intropage.txt", 
+  "borderspage_01.txt", 
+  "airportspage_01.txt",
+  "airportspage_02.txt",
+  "calatoniapage_01.txt",
+  "kapwapage_01.txt",
+  "foodpage_01.txt",
+  "foodpage_02.txt",
+  "languagepage_01.txt",
+  "soundpage_01.txt",
+  "soundpage_02.txt",
+  "pi100page_01.txt",
+  "leveluppage_01.txt",
+  "back2startpage_01.txt",
+  "back2startpage_02.txt"
+];
 
 let textBoxes = [];
 let titleX = 0;
 let titleY = 0;
-let sampleImage;
 let asciiSize = 24;
-let defaultFontSize = 18;
+let defaultFontSize = 16;
 
 let characterSet; // The character set object, contains the texture of the characters to be used in the shader
 
@@ -26,12 +42,11 @@ let topLayer;
 
 let currScene;
 let loadedImages = [];
+let fileLoaded = false;
 
 function preload() {  
   font = loadFont(fontName);
   scenesData = loadStrings("/content/" + fileNames[0]);
-  sampleImage = loadImage("/assets/STREETS_02_480.png");
-  sampleImage_2 = loadImage("/assets/STREETS_06_480.png");
   slidesShader = loadShader("base.vert", "shader.frag");
 }
 
@@ -65,9 +80,10 @@ function mouseClicked() {
   } else {
     clickIndex++;      
   }
-
-  scenesData = loadStrings("/content/" + fileNames[clickIndex%fileNames.length], loadSceneFromFile);
+  fileLoaded = false;
   topLayer.clear();
+  scenesData = loadStrings("/content/" + fileNames[clickIndex%fileNames.length], loadSceneFromFile);
+
 }
 
 function draw() {
@@ -113,29 +129,37 @@ function draw() {
   //slidesShader.setUniform('u_randBrightness', [0.22, 0.12, 0.12]); // rand
   slidesShader.setUniform('u_randBrightness', [random(0.1, 0.125), random(0.1, 0.625), random(0.1, 0.12)]); // rand
 
-  push();
-  translate(-windowWidth/2, -windowHeight/2);
-  image(shaderLayer, 0, 0);
-  for(let i = 0; i < textBoxes.length; i++) {
-    textBoxes[i].draw(topLayer, i * 220, 10, false);
+  console.log("imagesloaded: " + fileLoaded);
+
+  if(fileLoaded) {
+    push();
+    translate(-windowWidth/2, -windowHeight/2);
+    image(shaderLayer, 0, 0);
+    for(let i = 0; i < textBoxes.length; i++) {
+      textBoxes[i].draw(topLayer, i * 220, 10, false);
+    }
+    image(topLayer, 0, 0);
+    loadImageLayer();
+    pop();
   }
-  image(topLayer, 0, 0);
-  loadImageLayer();
-  pop();
+  
 }
 
 function loadSceneFromFile() {
+  loadedImages = [];
   let line = scenesData[0];
+  fileLoaded = true;
+
   if(line.startsWith("# "))
     currScene = new Scene({title: line});
   else
     currScene = new Scene({title: "Untitled"});
 
   let tempPage;
-
+  let currText = "";
   for (let i = 0; i < scenesData.length; i++) {
     let line = scenesData[i];
-
+    
     if(line.startsWith("## ")){
       if(tempPage == undefined) { // first
         tempPage = {
@@ -144,6 +168,8 @@ function loadSceneFromFile() {
         };
         tempPage.title = line;
       } else {
+        if(currText.length > 0) tempPage.text.push(currText);
+        currText = "";
         currScene.addPage(tempPage.title, tempPage.text);
         tempPage = {
           "title": line,
@@ -158,15 +184,20 @@ function loadSceneFromFile() {
       const end = line.indexOf(")");
       const imgFileName = line.substring(start, end);
       currScene.addImage(imgFileName);
-    } else {
-      tempPage.text.push(line);
+    } else if (tempPage != undefined && line.length > 0) {
+      if (currText.length > 0) currText += "\n";
+      currText +=  line;
+    } else if(line.length == 0 && currText.length > 0) {
+      tempPage.text.push(currText);
+      currText = "";
     }
   }
   if(tempPage.title.length > 0) {
+    tempPage.text.push(currText);
+    currText = "";
     currScene.addPage(tempPage.title, tempPage.text);
   }
 
-  loadedImages = [];
   for(let i = 0; i < currScene.images.length; i++) {
     let tempImage = loadImage(currScene.images[i], loadImagesCallback);
   }
@@ -180,6 +211,7 @@ function loadImagesCallback(data) {
   console.log(data);
 
   if(loadedImages.length == currScene.getImageCount()) {
+    fileLoaded = true;
     console.log("all loaded");
     loadImageLayer();
   }
