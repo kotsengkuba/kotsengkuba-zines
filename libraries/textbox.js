@@ -43,11 +43,11 @@ class TextBox {
             gfx.fill(50);
             gfx.text(newLines[i], x+this.padding, y + i*this.fontSize); 
         }
-        gfx.translate(0,0,-1.5);
+        /*gfx.translate(0,0,-1.5);
         for(let i = 0; i<newLines.length; i++) {
             gfx.fill(50);
             gfx.text(newLines[i], x+this.padding, y + i*this.fontSize); 
-        }
+        }*/
         gfx.pop();
     }
 
@@ -90,5 +90,10 @@ class TextBox {
             modified_text = modified_text + "\n";
         }
         this.text = modified_text;
+    }
+
+    getHeight() {
+        let newLines = this.text.split("\n");
+        return (this.padding*2) + (newLines.length*this.fontSize);
     }
 }
