@@ -22,7 +22,7 @@ class TextBox {
         
         gfx.push();
         if(isClear) gfx.clear();
-        gfx.translate((-windowWidth/2) + 1, (-windowHeight/2) + 1);
+        gfx.translate((-gfx.width/2) + 1, (-gfx.height/2) + 1);
         gfx.textFont(this.font);
         gfx.textSize(this.fontSize);
         gfx.textAlign(LEFT, TOP);
@@ -95,5 +95,9 @@ class TextBox {
     getHeight() {
         let newLines = this.text.split("\n");
         return (this.padding*2) + (newLines.length*this.fontSize);
+    }
+
+    getWidth() {
+        return this.width;
     }
 }
