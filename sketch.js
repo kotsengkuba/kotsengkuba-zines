@@ -1,6 +1,6 @@
 const fps = 12;
-//const fontName = 'fonts/CutiveMono-Regular.ttf';
-const fontName = 'fonts/VT323-Regular.ttf';
+const fontName = 'fonts/CutiveMono-Regular.ttf';
+//const fontName = 'fonts/VT323-Regular.ttf';
 
 const asciiSet = '#$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?-_+~<>i!lI;:,"^`.  ';
 
@@ -9,6 +9,7 @@ const margin = 10;
 
 let clickIndex = 0;
 let fileNames = [
+  "loadcharacters.txt",
   "titlepage.txt", 
   "intropage.txt", 
   "borderspage_01.txt", 
@@ -26,6 +27,11 @@ let fileNames = [
   "back2startpage_01.txt",
   "back2startpage_02.txt"
 ];
+/*let fileNames = [
+  "intropage.txt",
+  "titlepage.txt", 
+  "intropage.txt"
+];*/
 
 let textBoxes = [];
 let sceneTitleTextBox;
@@ -49,31 +55,45 @@ let currSceneIndex = 0;
 let currPageIndex = 0;
 let loadedImages = [];
 let fileLoaded = false;
-
+let isDrawn = false;
+let allScenesData = [];
 function preload() {  
   font = loadFont(fontName);
-  scenesData = loadStrings("/content/" + fileNames[0]);
+  sceneData = loadStrings("/content/" + fileNames[0]);
   slidesShader = loadShader("base.vert", "shader.frag");
+
+  for(let i=0; i < fileNames.length; i++) {
+    allScenesData.push(loadStrings("/content/" + fileNames[i]));
+  }
 }
 
 function setup() {
+  //console.log(allScenesData);
+  sceneData = allScenesData[0];
+  currScene = new Scene({title: ""});
   p5Canvas = createCanvas(windowWidth, windowHeight, WEBGL);
   p5Canvas.parent("main-div");
   frameRate(fps);
   background(0);
+  pixelDensity(1);
 
   shaderLayer = createGraphics(width, height, WEBGL);
   shaderLayer.shader(slidesShader);
   imageLayer = createGraphics(width, height, WEBGL);
   leftLayer = createGraphics(width/2, height, WEBGL);
   rightLayer = createGraphics(width/2, height*2, WEBGL);
+  
+  leftLayer.textFont(font);
+  leftLayer.textSize(defaultFontSize);
+  leftLayer.textAlign(LEFT, TOP);
+  leftLayer.fill(50);
 
   loadSceneFromFile();
   characterSet = new CharacterSet({font: font, fontSize: asciiSize, characters: asciiSet });
 }
 
 function mouseClicked() {
-  
+  isDrawn = false;
   let shouldSceneChange = false;
   // track clicks if left or right side of the screen
   if(mouseX < width/2) {
@@ -102,39 +122,32 @@ function mouseClicked() {
 
   // reload files
   if(shouldSceneChange) {
-    fileLoaded = false;
-    leftLayer.clear();
-    rightLayer.clear();
-    scenesData = loadStrings("/content/" + fileNames[currSceneIndex], loadSceneFromFile);
+    //fileLoaded = false;
+    //leftLayer.clear();
+    //rightLayer.clear();
+    sceneData = allScenesData[currSceneIndex];
+    loadSceneFromFile();
   }
 
   loadPageTextBox();
   loadTextBoxes();
-  
 
+  resetTextBoxes();
 }
 
-function draw() {
-
-  if(frameCount % (fps) == 0) {
-    titleX = random(0, width/2);
-    titleY = random(50, windowHeight);
-  }
-
+function mouseMoved() {
   asciiSize = floor(mouseY/30);
   if(asciiSize >= 4) characterSet.setFontSize(asciiSize);
 
   shaderLayer.clear();
-  shaderLayer.background(20,30,10,255);
+  shaderLayer.background(20,30,10,100);
   shaderLayer.rect(0, 0); // idk why this works
   setShaderValues();
-  
+}
+
+function draw() {
   // redraw when everythings loaded
-  if(fileLoaded) {
-    
-
-    //loadImageLayer();
-
+  //if(fileLoaded && !isDrawn) {
     clear();
     push();
     translate(-width/2, -height/2);
@@ -142,8 +155,9 @@ function draw() {
     image(leftLayer, 0, 0);
     image(rightLayer, width/2, 0);
     pop();
-  }
-  
+    
+    //isDrawn = true;
+  //}
 }
 
 function setShaderValues() {
@@ -175,18 +189,21 @@ function setShaderValues() {
 function loadSceneFromFile() {
   currPageIndex = 0;
   loadedImages = [];
-  let line = scenesData[0];
+  let line = sceneData[0];
   fileLoaded = true;
 
-  if(line.startsWith("# "))
-    currScene = new Scene({title: line});
-  else
-    currScene = new Scene({title: "Untitled"});
+  if(line.startsWith("# ")) {
+    //currScene = new Scene({title: line});
+    currScene.reset(line);
+  }
+    
+  //else
+    //currScene = new Scene({title: "Untitled"});
 
   let tempPage;
   let currText = "";
-  for (let i = 0; i < scenesData.length; i++) {
-    let line = scenesData[i];
+  for (let i = 0; i < sceneData.length; i++) {
+    let line = sceneData[i];
     
     if(line.startsWith("## ")){
       if(tempPage == undefined) { // first
@@ -239,13 +256,18 @@ function loadImagesCallback(data) {
 
   if(loadedImages.length == currScene.getImageCount()) {
     fileLoaded = true;
-    console.log("all images loaded");
+    //console.log("all images loaded");
     loadImageLayer();
   }
 }
 
 function loadPageTextBox() {
-  pageTitleTextBox = new TextBox({text: currScene.getPage(currPageIndex).title, font: font, fontSize: defaultFontSize, width: 200, padding: 10, hasShadow: true});
+  if(pageTitleTextBox == undefined) {
+    pageTitleTextBox = new TextBox({text: currScene.getPage(currPageIndex).title, font: font, fontSize: defaultFontSize, width: 200, padding: 10, hasShadow: true});
+  } else {
+    pageTitleTextBox.setText(currScene.getPage(currPageIndex).title);
+    //pageTitleTextBox.setText("ABCDEF");
+  }
 }
 
 function loadTextBoxes() {
@@ -268,11 +290,13 @@ function resetTextBoxes() {
 
   let xPos = (leftLayer.width-sceneTitleTextBox.getWidth())/2;
   let yPos = (leftLayer.height-sceneTitleTextBox.getHeight())/2;
-  sceneTitleTextBox.draw(leftLayer, xPos, yPos, false);
+  sceneTitleTextBox.draw(leftLayer, 0, 0, false);
+  //drawTextbox(sceneTitleTextBox, 0, 0, 0);
 
   xPos = (leftLayer.width-pageTitleTextBox.getWidth())/2;
   yPos += sceneTitleTextBox.getHeight() + 10;
   pageTitleTextBox.draw(leftLayer, xPos, yPos, false);
+  //drawTextbox(pageTitleTextBox, 0, 50, 0);
 
   let tempY = 0;
   let xOffset = 0;
@@ -280,7 +304,7 @@ function resetTextBoxes() {
     xPos = margin;//(leftLayer.width-textBoxes[i].getWidth())/2;
     //xOffset = random(-textBoxes[i].getWidth()/2, textBoxes[i].getWidth()/2);
     textBoxes[i].draw(rightLayer, xPos+xOffset, margin + tempY, false);
-    tempY += textBoxes[i].getHeight();
+    tempY += textBoxes[i].getHeight() + 10;
   }
 }
 
@@ -303,11 +327,7 @@ function loadImageLayer() {
   imageLayer.clear();
   imageLayer.push();
   imageLayer.translate(-windowWidth/2, -windowHeight/2);
-  let lastWidth = 0;
-  /*for(let i = 0; i < loadedImages.length; i++) {
-    imageLayer.image(loadedImages[i], lastWidth, 0);
-    lastWidth += loadedImages[i].width;
-  }*/
+
   loadedImages[leftImageIndex].resize(width/2, 0);
   loadedImages[rightImageIndex].resize(width/2, 0);
 
@@ -315,4 +335,24 @@ function loadImageLayer() {
   imageLayer.image(loadedImages[leftImageIndex], 0, random(0, maxYoffset), width/2);
   imageLayer.image(loadedImages[rightImageIndex], width/2, random(0, maxYoffset), width/2);
   imageLayer.pop();
+}
+
+function drawTextbox(tb, x, y, side) {
+  let newLines = pageTitleTextBox.text.split("\n");
+  console.log("drawtextbox : " + newLines);
+  console.log(newLines);
+  
+  leftLayer.push();
+  leftLayer.translate((-leftLayer.width/2), (-leftLayer.height/2));
+  
+  fill(0);
+  clear();
+  textFont(font);
+  if(side == 0) {
+    for(let i = 0; i<newLines.length; i++) {
+      let line = newLines[i];
+      text(line, x, y + i*24); 
+      }
+    }
+  leftLayer.pop();
 }

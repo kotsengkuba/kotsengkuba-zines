@@ -27,4 +27,13 @@ class Scene {
     getImageCount() { 
         return this.images.length;
     }
+
+    setTitle(t) {
+        this.title = this.title;
+    }
+    reset(title) {
+        this.title = title;
+        this.pages = [];
+        this.images = [];
+    }
 }

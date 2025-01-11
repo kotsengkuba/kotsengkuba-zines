@@ -93,15 +93,15 @@ class CharacterSet {
 
         if (!this.buffer) { // Initially create the framebuffer containing the unique characters. Otherwise, resize the existing texture.
             this.buffer = createGraphics(dimensions.width * this.charsetCols , dimensions.height * this.charsetRows, WEBGL);
+            this.buffer.textFont(this.font);
         } else {
             //this.buffer.resize(dimensions.width * this.charsetCols, dimensions.height * this.charsetRows);
         }
 
         this.buffer.clear();
-        this.buffer.textFont(this.font);
         //this.buffer.background(255);
         //this.buffer.fill(0); // black
-        this.buffer.fill(0, 200, 100); // font color
+        this.buffer.fill(255, 255, 255, 255); // font color
         this.buffer.textSize(fontSize);
         this.buffer.textAlign(LEFT, TOP);
         this.buffer.noStroke();
