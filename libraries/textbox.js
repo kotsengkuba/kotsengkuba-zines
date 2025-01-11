@@ -10,17 +10,31 @@ class TextBox {
         this.shadowOffset = 5;
         this.padding = padding;
 
-        textFont(this.font);
-        textSize(this.fontSize);
-        textAlign(LEFT, TOP);
-
         this.textToWidth(this.text, this.width);
     }
 
     setText(t) {
         this.text = t;
         this.textToWidth(this.text, this.width);
-        //console.log("change text: " + this.text);
+        this.output.clear();
+        this.drawOutput();
+    }
+
+    drawOutput() {
+        let newLines = this.text.split("\n");
+        this.output.fill(0);
+        this.output.noStroke();
+        this.output.rect(this.shadowOffset, this.shadowOffset, this.width+this.padding, this.getHeight());
+
+        this.output.stroke(0);
+        this.output.strokeWeight(1);
+        this.output.fill(255, 255, 255);
+        this.output.rect(0, 0, this.width+this.padding, this.getHeight());
+        this.output.fill(50);
+        for(let i = 0; i<newLines.length; i++) {
+            let line = newLines[i];
+            this.output.text(newLines[i], this.padding, this.padding + i*this.fontSize); 
+        }
     }
 
     draw(gfx, x, y, isClear = false) {
@@ -64,6 +78,9 @@ class TextBox {
         
         let modified_text = "";
         let w = width;
+        push();
+        textFont(this.font);
+        textSize(this.fontSize);
         for(let i = 0; i < lines.length; i++) {
             if(i!=0) modified_text = modified_text + "\n";
             let line = lines[i];
@@ -98,6 +115,7 @@ class TextBox {
             }      
             }
         }
+        pop();
         this.text = modified_text;
     }
 
@@ -111,6 +129,13 @@ class TextBox {
     }
 
     getTexture() {
-        this.output;
+        if(this.output == undefined) {
+            this.output = createGraphics(this.getWidth()  + (2*this.padding), this.getHeight()  + this.shadowOffset);
+            this.output.textFont('Courier New');
+            this.output.textSize(this.fontSize);
+            this.output.textAlign(LEFT, TOP);
+            this.drawOutput();
+        }
+        return this.output;
     }
 }

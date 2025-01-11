@@ -148,7 +148,7 @@ function mouseMoved() {
 function draw() {
   // redraw when everythings loaded
   //if(fileLoaded && !isDrawn) {
-    clear();
+    //clear();
     push();
     translate(-width/2, -height/2);
     image(shaderLayer, 0, 0);
@@ -290,20 +290,32 @@ function resetTextBoxes() {
 
   let xPos = (leftLayer.width-sceneTitleTextBox.getWidth())/2;
   let yPos = (leftLayer.height-sceneTitleTextBox.getHeight())/2;
-  sceneTitleTextBox.draw(leftLayer, 0, 0, false);
+  //.draw(leftLayer, 0, 0, false);
   //drawTextbox(sceneTitleTextBox, 0, 0, 0);
+  leftLayer.push();
+  leftLayer.translate(-leftLayer.width/2, -leftLayer.height/2);
+  leftLayer.image(sceneTitleTextBox.getTexture(), 0, 0);
+  leftLayer.pop();
 
   xPos = (leftLayer.width-pageTitleTextBox.getWidth())/2;
   yPos += sceneTitleTextBox.getHeight() + 10;
-  pageTitleTextBox.draw(leftLayer, xPos, yPos, false);
+  //pageTitleTextBox.draw(leftLayer, xPos, yPos, false);
   //drawTextbox(pageTitleTextBox, 0, 50, 0);
+  leftLayer.push();
+  leftLayer.translate(-leftLayer.width/2, -leftLayer.height/2);
+  leftLayer.image(pageTitleTextBox.getTexture(), xPos, yPos);
+  leftLayer.pop();
 
   let tempY = 0;
   let xOffset = 0;
   for(let i = 0; i < textBoxes.length; i++) {
     xPos = margin;//(leftLayer.width-textBoxes[i].getWidth())/2;
     //xOffset = random(-textBoxes[i].getWidth()/2, textBoxes[i].getWidth()/2);
-    textBoxes[i].draw(rightLayer, xPos+xOffset, margin + tempY, false);
+    //textBoxes[i].draw(rightLayer, xPos+xOffset, margin + tempY, false);
+    rightLayer.push();
+    rightLayer.translate(-rightLayer.width/2, -rightLayer.height/2);
+    rightLayer.image(textBoxes[i].getTexture(), xPos+xOffset, margin + tempY);
+    rightLayer.pop();
     tempY += textBoxes[i].getHeight() + 10;
   }
 }
