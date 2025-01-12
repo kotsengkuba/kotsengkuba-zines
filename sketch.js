@@ -53,6 +53,10 @@ let rightLayer;
 let currScene;
 let currSceneIndex = 0;
 let currPageIndex = 0;
+let currBoxesStartIndex = 0;
+let nextBoxesStartIndex = 0;
+let currBoxesTotHeight = 0;
+
 let loadedImages = [];
 let fileLoaded = false;
 let isDrawn = false;
@@ -93,10 +97,13 @@ function setup() {
 }
 
 function mouseClicked() {
+  console.log("start index " + currBoxesStartIndex);
+  console.log("next index " + nextBoxesStartIndex);
   isDrawn = false;
   let shouldSceneChange = false;
   // track clicks if left or right side of the screen
   if(mouseX < width/2) {
+    currBoxesStartIndex = 0;
     if(currPageIndex > 0) {
       currPageIndex--;
       loadImageLayer();
@@ -107,16 +114,22 @@ function mouseClicked() {
       // first page is reached.. do nothing
     }
   } else {
-    if(currPageIndex < currScene.getPageCount()-1) {
-      currPageIndex++;
-      loadImageLayer();
-    } else if (currSceneIndex < fileNames.length-1) {
-      currSceneIndex++;
-      shouldSceneChange = true;
+    if(nextBoxesStartIndex < textBoxes.length) {
+      currBoxesStartIndex = nextBoxesStartIndex;
     } else {
-      // end is reached.. return to first page
-      currSceneIndex = 0;
-      shouldSceneChange = true;
+      currBoxesStartIndex = 0;
+      if(currPageIndex < currScene.getPageCount()-1) {
+        currPageIndex++;
+        loadImageLayer();
+      } else if (currSceneIndex < fileNames.length-1) {
+        currSceneIndex++;
+        shouldSceneChange = true;
+      } else {
+        // end is reached.. return to first page
+        currSceneIndex = 0;
+        currBoxesStartIndex = 0;
+        shouldSceneChange = true;
+      }
     }     
   }
 
@@ -291,7 +304,6 @@ function resetTextBoxes() {
   let xPos = (leftLayer.width-sceneTitleTextBox.getWidth())/2;
   let yPos = (leftLayer.height-sceneTitleTextBox.getHeight())/2;
   //.draw(leftLayer, 0, 0, false);
-  //drawTextbox(sceneTitleTextBox, 0, 0, 0);
   leftLayer.push();
   leftLayer.translate(-leftLayer.width/2, -leftLayer.height/2);
   leftLayer.image(sceneTitleTextBox.getTexture(), 0, 0);
@@ -300,7 +312,6 @@ function resetTextBoxes() {
   xPos = (leftLayer.width-pageTitleTextBox.getWidth())/2;
   yPos += sceneTitleTextBox.getHeight() + 10;
   //pageTitleTextBox.draw(leftLayer, xPos, yPos, false);
-  //drawTextbox(pageTitleTextBox, 0, 50, 0);
   leftLayer.push();
   leftLayer.translate(-leftLayer.width/2, -leftLayer.height/2);
   leftLayer.image(pageTitleTextBox.getTexture(), xPos, yPos);
@@ -308,15 +319,19 @@ function resetTextBoxes() {
 
   let tempY = 0;
   let xOffset = 0;
-  for(let i = 0; i < textBoxes.length; i++) {
-    xPos = margin;//(leftLayer.width-textBoxes[i].getWidth())/2;
-    //xOffset = random(-textBoxes[i].getWidth()/2, textBoxes[i].getWidth()/2);
-    //textBoxes[i].draw(rightLayer, xPos+xOffset, margin + tempY, false);
-    rightLayer.push();
-    rightLayer.translate(-rightLayer.width/2, -rightLayer.height/2);
-    rightLayer.image(textBoxes[i].getTexture(), xPos+xOffset, margin + tempY);
-    rightLayer.pop();
-    tempY += textBoxes[i].getHeight() + 10;
+  let tempTotHeight = 0;
+  for(let i = currBoxesStartIndex; i < textBoxes.length; i++) {
+    tempTotHeight += (textBoxes[i].getHeight() + margin);
+    if(tempTotHeight < height) {
+      xPos = margin;
+      xOffset = random(textBoxes[i].getWidth()/2);
+      rightLayer.push();
+      rightLayer.translate(-rightLayer.width/2, -rightLayer.height/2);
+      rightLayer.image(textBoxes[i].getTexture(), xPos+xOffset, margin + tempY);
+      rightLayer.pop();
+      tempY += textBoxes[i].getHeight() + 10;
+      nextBoxesStartIndex = i+1;
+    }
   }
 }
 
@@ -347,24 +362,4 @@ function loadImageLayer() {
   imageLayer.image(loadedImages[leftImageIndex], 0, random(0, maxYoffset), width/2);
   imageLayer.image(loadedImages[rightImageIndex], width/2, random(0, maxYoffset), width/2);
   imageLayer.pop();
-}
-
-function drawTextbox(tb, x, y, side) {
-  let newLines = pageTitleTextBox.text.split("\n");
-  console.log("drawtextbox : " + newLines);
-  console.log(newLines);
-  
-  leftLayer.push();
-  leftLayer.translate((-leftLayer.width/2), (-leftLayer.height/2));
-  
-  fill(0);
-  clear();
-  textFont(font);
-  if(side == 0) {
-    for(let i = 0; i<newLines.length; i++) {
-      let line = newLines[i];
-      text(line, x, y + i*24); 
-      }
-    }
-  leftLayer.pop();
 }
