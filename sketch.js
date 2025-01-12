@@ -63,6 +63,9 @@ let loadedImages = [];
 let fileLoaded = false;
 let isDrawn = false;
 let allScenesData = [];
+let leftImageIndex = 0;
+let rightImageIndex = 0;
+
 function preload() {  
   font = loadFont(fontName);
   sceneData = loadStrings("/content/" + fileNames[0]);
@@ -77,7 +80,7 @@ function setup() {
   //console.log(allScenesData);
   sceneData = allScenesData[0];
   currScene = new Scene({title: ""});
-  p5Canvas = createCanvas(windowWidth, windowHeight, WEBGL);
+  p5Canvas = createCanvas(windowWidth - 10, windowHeight - 10, WEBGL);
   p5Canvas.parent("main-div");
   frameRate(fps);
   background(0);
@@ -103,45 +106,13 @@ function mouseClicked() {
   let shouldSceneChange = false;
   // track clicks if left or right side of the screen
   if(mouseX < width/2) {
-    currBoxesStartIndex = 0;
-    if(currPageIndex > 0) {
-      currPageIndex--;
-      loadImageLayer();
-    } else if(currSceneIndex > 0) {
-      currSceneIndex--;
-      currPageIndex = prevPageCount;
-      shouldSceneChange = true;
-    } else {
-      // first page is reached.. do nothing
-    }
+    shouldSceneChange = leftTrigger();
   } else {
-    if(nextBoxesStartIndex < textBoxes.length) {
-      currBoxesStartIndex = nextBoxesStartIndex;
-    } else {
-      currBoxesStartIndex = 0;
-      if(currPageIndex < currScene.getPageCount()-1) {
-        currPageIndex++;
-        loadImageLayer();
-      } else if (currSceneIndex < fileNames.length-1) {
-        currSceneIndex++;
-        prevPageCount = currScene.getPageCount()-1;
-        currPageIndex = 0;
-        shouldSceneChange = true;
-      } else {
-        // end is reached.. return to first page
-        currSceneIndex = 0;
-        currPageIndex = 0;
-        currBoxesStartIndex = 0;
-        shouldSceneChange = true;
-      }
-    }     
+    shouldSceneChange = rightTrigger();
   }
 
   // reload files
   if(shouldSceneChange) {
-    //fileLoaded = false;
-    //leftLayer.clear();
-    //rightLayer.clear();
     sceneData = allScenesData[currSceneIndex];
     loadSceneFromFile();
   }
@@ -150,6 +121,46 @@ function mouseClicked() {
   loadTextBoxes();
 
   resetTextBoxes();
+}
+function leftTrigger() {
+  let shouldSceneChange = false;
+  currBoxesStartIndex = 0;
+  if(currPageIndex > 0) {
+    currPageIndex--;
+    loadImageLayer();
+  } else if(currSceneIndex > 0) {
+    currSceneIndex--;
+    currPageIndex = prevPageCount;
+    shouldSceneChange = true;
+  } else {
+    // first page is reached.. do nothing
+  }
+  return shouldSceneChange;
+}
+
+function rightTrigger() {
+  let shouldSceneChange = false;
+  if(nextBoxesStartIndex < textBoxes.length) {
+    currBoxesStartIndex = nextBoxesStartIndex;
+  } else {
+    currBoxesStartIndex = 0;
+    if(currPageIndex < currScene.getPageCount()-1) {
+      currPageIndex++;
+      loadImageLayer();
+    } else if (currSceneIndex < fileNames.length-1) {
+      currSceneIndex++;
+      prevPageCount = currScene.getPageCount()-1;
+      currPageIndex = 0;
+      shouldSceneChange = true;
+    } else {
+      // end is reached.. return to first page
+      currSceneIndex = 0;
+      currPageIndex = 0;
+      currBoxesStartIndex = 0;
+      shouldSceneChange = true;
+    }
+  } 
+  return shouldSceneChange;
 }
 
 function mouseMoved() {
@@ -162,6 +173,30 @@ function mouseMoved() {
   setShaderValues();
 }
 
+function keyPressed() {
+  isDrawn = false;
+  let shouldSceneChange = false;
+  // track  left and right key presses
+  if(keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
+    if(keyCode === LEFT_ARROW) {
+      shouldSceneChange = leftTrigger();
+    } else if (keyCode === RIGHT_ARROW) {
+      shouldSceneChange = rightTrigger();
+    }
+  
+    // reload files
+    if(shouldSceneChange) {
+      sceneData = allScenesData[currSceneIndex];
+      loadSceneFromFile();
+    }
+  
+    loadPageTextBox();
+    loadTextBoxes();
+  
+    resetTextBoxes();
+  }
+}
+
 function draw() {
   // redraw when everythings loaded
   shaderLayer.clear();
@@ -169,12 +204,25 @@ function draw() {
   shaderLayer.rect(0, 0); // idk why this works
   setShaderValues();
   //if(fileLoaded && !isDrawn) {
-    //clear();
+    clear();
     push();
     translate(-width/2, -height/2);
     image(shaderLayer, 0, 0);
-    image(leftLayer, 0, 0);
-    image(rightLayer, width/2, 0);
+    if (!keyIsDown(49)) {
+      image(leftLayer, 0, 0);
+    } else {
+      tint(255, 127);
+      image(loadedImages[leftImageIndex], 0, (height-loadedImages[leftImageIndex].height)/2);
+    }
+    if (!keyIsDown(50)) {
+      image(rightLayer, width/2, 0);
+    } else {
+      tint(255, 127);
+      image(loadedImages[rightImageIndex], width/2, (height-loadedImages[rightImageIndex].height)/2);
+    }
+    
+    //image(leftLayer, 0, 0);
+    //image(rightLayer, width/2, 0);
     pop();
     
     //isDrawn = true;
@@ -354,8 +402,8 @@ function resetTextBoxes() {
 
 function loadImageLayer() {
   // only need 2 images to show so if there are more than 2, select randomly
-  let leftImageIndex = 0;
-  let rightImageIndex = 1;
+  leftImageIndex = 0;
+  rightImageIndex = 1;
 
   if(loadedImages.length > 2) {
     leftImageIndex = floor(random(0, loadedImages.length));
@@ -370,7 +418,7 @@ function loadImageLayer() {
 
   imageLayer.clear();
   imageLayer.push();
-  imageLayer.translate(-windowWidth/2, -windowHeight/2);
+  imageLayer.translate(-width/2, -height/2);
 
   loadedImages[leftImageIndex].resize(width/2, 0);
   loadedImages[rightImageIndex].resize(width/2, 0);

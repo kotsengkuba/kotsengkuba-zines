@@ -9,7 +9,11 @@ class Scene {
     }
 
     addPage(title, textArr) {
-        this.pages.push({title: title, texts: textArr});
+        this.pages.push({title: title, texts: textArr, pageImages:[]});
+    }
+
+    addPage(title, textArr, imArr) {
+        this.pages.push({title: title, texts: textArr, pageImages: imArr});
     }
 
     addImage(im) {
