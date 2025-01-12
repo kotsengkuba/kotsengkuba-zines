@@ -1,2 +1,4 @@
-# kotsengkuba.github.io
-Minnie's MDEF Journey
+# para llevar
+## a zine
+
+
