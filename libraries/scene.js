@@ -8,11 +8,7 @@ class Scene {
         this.images = [];
     }
 
-    addPage(title, textArr) {
-        this.pages.push({title: title, texts: textArr, pageImages:[]});
-    }
-
-    addPage(title, textArr, imArr) {
+    addPage(title, textArr, imArr = []) {
         this.pages.push({title: title, texts: textArr, pageImages: imArr});
     }
 
@@ -30,6 +26,18 @@ class Scene {
 
     getImageCount() { 
         return this.images.length;
+    }
+
+    getImageIndexOf(str) {
+        return this.images.indexOf(str);
+    }
+
+    getPageImageCount(pageIndex) {
+        return this.pages[pageIndex].pageImages.length;
+    }
+
+    getPageImage(pageIndex, imIndex) {
+        return this.pages[pageIndex].pageImages[imIndex];
     }
 
     setTitle(t) {

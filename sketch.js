@@ -64,6 +64,7 @@ let isDrawn = false;
 let allScenesData = [];
 let leftImageIndex = 0;
 let rightImageIndex = 0;
+let imageLoadingIndex = 0;
 
 function preload() {  
   font = loadFont(fontName);
@@ -263,6 +264,7 @@ function setShaderValues() {
 function loadSceneFromFile() {
   //currPageIndex = 0;
   loadedImages = [];
+  imageLoadingIndex = 0;
   let line = sceneData[0];
   fileLoaded = true;
 
@@ -289,16 +291,18 @@ function loadSceneFromFile() {
       if(tempPage == undefined) { // first
         tempPage = {
           "title": "",
-          "text": []
+          "text": [], 
+          "imArr": []
         };
         tempPage.title = line;
       } else {
         if(currText.length > 0) tempPage.text.push(currText);
         currText = "";
-        currScene.addPage(tempPage.title, tempPage.text);
+        currScene.addPage(tempPage.title, tempPage.text, tempPage.imArr);
         tempPage = {
           "title": line,
-          "text": []
+          "text": [], 
+          "imArr": []
         };
       }     
       
@@ -308,7 +312,12 @@ function loadSceneFromFile() {
       const start = line.indexOf("(") + 1;
       const end = line.indexOf(")");
       const imgFileName = line.substring(start, end);
+      //console.log(imgFileName)
+      //console.log(tempPage);
       currScene.addImage(imgFileName);
+      if (tempPage != undefined) {
+        tempPage.imArr.push(imgFileName);
+      }
     } else if (tempPage != undefined && line.length > 0) {
       if (currText.length > 0) currText += "\n";
       currText +=  line;
@@ -320,14 +329,23 @@ function loadSceneFromFile() {
   if(tempPage.title.length > 0) {
     tempPage.text.push(currText);
     currText = "";
-    currScene.addPage(tempPage.title, tempPage.text);
+    currScene.addPage(tempPage.title, tempPage.text, tempPage.imArr);
   }
 
-  for(let i = 0; i < currScene.images.length; i++) {
+  /*for(let i = 0; i < currScene.images.length; i++) {
     let tempImage = loadImage(currScene.images[i], loadImagesCallback);
-  }
+  }*/
 
+  //console.log(currScene);
+  loadPageImages();
   resetTextBoxes();
+}
+
+function loadPageImages() {
+  /*for(let i = 0; i < currScene.images.length; i++) {
+    loadImage(currScene.images[i], loadImagesCallback);
+  }*/
+  loadImage(currScene.images[imageLoadingIndex], loadImagesCallback);
 }
 
 function loadImagesCallback(data) {
@@ -338,6 +356,9 @@ function loadImagesCallback(data) {
     fileLoaded = true;
     //console.log("all images loaded");
     loadImageLayer();
+  } else {
+    imageLoadingIndex++;
+    loadImage(currScene.images[imageLoadingIndex], loadImagesCallback);
   }
 }
 
@@ -407,7 +428,30 @@ function loadImageLayer() {
   leftImageIndex = 0;
   rightImageIndex = 1;
 
-  if(loadedImages.length > 2) {
+  // get how many images in page
+  let pageImgCount = currScene.getPageImageCount(currPageIndex);
+  //console.log(currScene);
+  //console.log(currPageIndex);
+  //console.log(pageImgCount);
+  let pimIndex = currScene.getImageIndexOf(currScene.getPageImage(currPageIndex, 0));
+  if(pimIndex != -1) {
+    leftImageIndex = pimIndex;
+  } else {
+    leftImageIndex = floor(random(0, loadedImages.length));
+  }
+
+  pimIndex = currScene.getImageIndexOf(currScene.getPageImage(currPageIndex, 1));
+  if(pimIndex != -1) {
+    rightImageIndex = pimIndex;
+  } else {
+    rightImageIndex = floor(random(0, loadedImages.length));
+  }
+  
+  console.log(leftImageIndex);
+  console.log(leftImageIndex + ", " +rightImageIndex);
+  console.log("loadedImages length " + loadedImages.length);
+
+  /*if(loadedImages.length > 2) {
     leftImageIndex = floor(random(0, loadedImages.length));
     if(leftImageIndex == loadedImages.length - 1) {
       rightImageIndex = 0;
@@ -416,7 +460,7 @@ function loadImageLayer() {
     }
   } else if (loadedImages.length == 1) {
     rightImageIndex = 0;
-  }
+  }*/
 
   imageLayer.clear();
   imageLayer.push();

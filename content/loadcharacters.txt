@@ -1,6 +1,0 @@
-# loading font...
-
-## qwertyuiopasdfghjklzxcvbnm QWERTYUIOPASDFGHJKLZXCVBNM< 1234567890-= !@#$%^&*()_+{}\|;':",./<>?
-qwertyuiopasdfghjklzxcvbnm QWERTYUIOPASDFGHJKLZXCVBNM< 1234567890-= !@#$%^&*()_+{}\|;':",./<>?
-
-click to continue
