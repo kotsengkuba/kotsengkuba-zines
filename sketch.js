@@ -13,20 +13,16 @@ let fileNames = [
   "intropage.txt", 
   "borderspage_01.txt", 
   "airportspage_01.txt",
-  "airportspage_02.txt",
-  "calatoniapage_01.txt",
-  "calatoniapage_02.txt",
+  "october-june.txt",
   "kapwapage_01.txt",
-  "foodpage_01.txt",
-  "foodpage_02.txt",
-  "foodpage_03.txt",
   "languagepage_01.txt",
+  "Touristsgo.txt",
   "soundpage_01.txt",
-  "soundpage_02.txt",
+  "calatoniapage_01.txt",
+  "foodpage_01.txt",
   "pi100page_01.txt",
   "leveluppage_01.txt",
-  "back2startpage_01.txt",
-  "back2startpage_02.txt"
+  "back2startpage_01.txt"
 ];
 /*let fileNames = [
   "intropage.txt",
