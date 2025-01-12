@@ -99,9 +99,8 @@ class CharacterSet {
         }
 
         this.buffer.clear();
-        //this.buffer.background(255);
-        //this.buffer.fill(0); // black
-        this.buffer.fill(255, 255, 255, 255); // font color
+        //this.buffer.background(255); // black
+        this.buffer.fill(220, 220, 220, 255); // font color
         this.buffer.textSize(fontSize);
         this.buffer.textAlign(LEFT, TOP);
         this.buffer.noStroke();

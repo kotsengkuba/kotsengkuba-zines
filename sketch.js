@@ -2,7 +2,7 @@ const fps = 12;
 const fontName = 'fonts/CutiveMono-Regular.ttf';
 //const fontName = 'fonts/VT323-Regular.ttf';
 
-const asciiSet = '#$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?-_+~<>i!lI;:,"^`.  ';
+const asciiSet = '@#$B%8&WM*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?-_+~<>i!lI;:,"^`.  ';
 
 const shadowOffset = 5;
 const margin = 10;
@@ -99,8 +99,6 @@ function setup() {
 }
 
 function mouseClicked() {
-  console.log("start index " + currBoxesStartIndex);
-  console.log("next index " + nextBoxesStartIndex);
   isDrawn = false;
   let shouldSceneChange = false;
   // track clicks if left or right side of the screen
@@ -198,15 +196,18 @@ function setShaderValues() {
   slidesShader.setUniform('u_gridPixelDimensions' , [width, height]); // The dimensions of the grid cell in pixels (total width and height)
   slidesShader.setUniform('u_gridDimensions', gridDimensions); // The dimensions of the grid in number of cells
 
-  slidesShader.setUniform('u_characterColor', [0.0, 0.0, 0.0]); // The color of the ASCII characters
+  slidesShader.setUniform('u_characterColor', [1.0, 1.0, 1.0]); // The color of the ASCII characters
   slidesShader.setUniform('u_characterColorMode', 0); // The color mode (0 = image color, 1 = single color)
   slidesShader.setUniform('u_backgroundColor', [1.0, 1.0, 1.0]); // The background color of the ASCII art
   slidesShader.setUniform('u_backgroundColorMode', 0); // The background color mode (0 = image color, 1 = single color)
 
   slidesShader.setUniform('u_invertMode', 0); // The character invert mode (0 = normal, 1 = inverted)
 
-  slidesShader.setUniform('u_randBrightness', [random(0.1, 0.125), random(0.1, 0.625), random(0.1, 0.12)]); // randomize brightness threashold
+  if(frameCount % 2 == 0){
+    slidesShader.setUniform('u_randBrightness', [random(0.1, 0.125), random(0.1, 0.625), random(0.1, 0.12)]); // randomize brightness threashold
 
+  }
+    
 }
 
 function loadSceneFromFile() {
@@ -322,11 +323,11 @@ function resetTextBoxes() {
   //.draw(leftLayer, 0, 0, false);
   leftLayer.push();
   leftLayer.translate(-leftLayer.width/2, -leftLayer.height/2);
-  leftLayer.image(sceneTitleTextBox.getTexture(), 0, 0);
+  leftLayer.image(sceneTitleTextBox.getTexture(), 10, 10);
   leftLayer.pop();
 
   xPos = (leftLayer.width-pageTitleTextBox.getWidth())/2;
-  yPos += sceneTitleTextBox.getHeight() + 10;
+  yPos = (leftLayer.width-pageTitleTextBox.getHeight())/2;
   //pageTitleTextBox.draw(leftLayer, xPos, yPos, false);
   leftLayer.push();
   leftLayer.translate(-leftLayer.width/2, -leftLayer.height/2);

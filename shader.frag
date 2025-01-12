@@ -75,10 +75,10 @@ void main() {
     // If the background color mode is 0, mix the simulation color and the final color based on the character's alpha value
     // Otherwise, mix the background color and the final color based on the character's alpha value
     if (u_backgroundColorMode == 0) {
-        gl_FragColor = mix(vec4(simColor.rgb, 0.8), finalColor, 0.5);
+        gl_FragColor = mix(vec4(simColor.rgb, charColor.a), finalColor, 0.9);
         //gl_FragColor = finalColor * vec4(simColor.rgb, 1.0);
     } else {
-        gl_FragColor = mix(vec4(u_backgroundColor, 1.0), finalColor, 1.0-charColor.a);
+        gl_FragColor = mix(vec4(u_backgroundColor, 1.0), finalColor, charColor.a);
     }
 
     //gl_FragColor = charColor;
