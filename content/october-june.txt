@@ -6,7 +6,7 @@
 
 Design for Emer ? what?? It was always tough explaining what the masters is, because for the most part we were confused on what we were or supposed to be doing. In the end, we learn to accept the doubt and freedom the program has allowed and  well, learned to treat it as a playground.
 
-To avoid being redundant you can just  check this site [minnie-at-iaac.github.com](http://minnie-at-iaac.github.com)
+To avoid being redundant you can just visit my documentation http://minnie-at-iaac.github.com
 
 ## Nou Barris
 ![](/assets/BCN_0029_BUS_01_360.jpg)
