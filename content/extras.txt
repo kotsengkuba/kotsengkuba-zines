@@ -1,13 +1,18 @@
+# Extras
 ![](/assets/ELISAVA_02_360.jpg)
 ![](/assets/PLANE_02_360.jpg)
-# Extras
+
 
 ## Shoutouts
 
 Sara - for suggesting to write something about this experience
 
-Enric - for inspiring 
+Enric - for sharing his amazing book
 
 Izy - for sending interesting stuff
 
 Billy - para hindi biased hahah
+
+@humanbydefinition - for p5js asciify library
+
+## References

@@ -22,7 +22,8 @@ let fileNames = [
   "foodpage_01.txt",
   "pi100page_01.txt",
   "leveluppage_01.txt",
-  "back2startpage_01.txt"
+  "back2startpage_01.txt", 
+  "extras.txt"
 ];
 /*let fileNames = [
   "intropage.txt",
@@ -266,7 +267,7 @@ function loadSceneFromFile() {
       currScene.reset(line);
     } else {
       let number = allScenesData.length - 1;
-      let title = line + "(" + currSceneIndex + "/" + number +")";
+      let title = currSceneIndex + "/" + number +" " + line ;
       currScene.reset(title);
     }
   }

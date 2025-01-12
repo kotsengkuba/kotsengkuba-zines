@@ -2,11 +2,22 @@
 ![](/assets/BCN_0001_SPAIN_THINGS_02_360.jpg)
 ![](/assets/BCN_0032_NOUBARRIS_MINNIE_01_360.jpg)
 
+## Release notes
+v1.0
+- Best viewed in chrome on a computer
+- Buggy in mobile
+- Buggy when window is vertical or small
+- Sometimes images fail to load, just hit refresh
+- Will probably procrastinate in fixing the bugs
+- Source code on github.com/kotsengkuba
+
 ## About
 
 Here I present snippets of thoughts, memories, reflections about my 13-month trip. Manila to Barcelona and nearby places.  Mostly in english, with little bits of taglish (tagalog + english) and attempts at spanish. 
 
 “para llevar” means “to go” or “for takeout”, usually used when buying food.
+
+Warning: this is quite long, feel free to just browse and bounce around
 
 ## begin();
 
@@ -18,7 +29,7 @@ I started writing and collecting as I welcomed myself to New York city. That pas
 
 New York has allowed for time and space; distraction, reflection; in calm and chaos - witnessing Trump’s re-election and getting hit by a car!
 
-I publish as I leave Texas and return home.
+I leave it here as I leave Texas and to go home.
 
 ## Travel
 
