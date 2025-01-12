@@ -9,9 +9,10 @@ v1.0
 - Sometimes images fail to load, just hit refresh
 - Will probably procrastinate in fixing the bugs
 - Source code github.com/kotsengkuba
+© 2025
 
 ## About
-![](/assets/STREETS_03_360.jpg)
+![](/assets/TILES_01_360.jpg)
 ![](/assets/STREETS_04_360.jpg)
 Here I present snippets of thoughts, memories, reflections about my 13-month trip. Manila to Barcelona and nearby places.  Mostly in english, with little bits of taglish (tagalog + english) and attempts at spanish. 
 
@@ -20,7 +21,7 @@ Here I present snippets of thoughts, memories, reflections about my 13-month tri
 Warning: this is quite long, feel free to just browse and bounce around
 
 ## begin();
-![](/assets/STREETS_03_360.jpg)
+![](/assets/TILES_01_360.jpg)
 ![](/assets/BCN_0015_SIGNS_NOMAMES_01_360.jpg)
 I started writing and collecting as I welcomed myself to New York city. That past 24 hours had been heavy and needed to come up with some direction and goals:
 
