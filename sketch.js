@@ -9,16 +9,17 @@ const margin = 10;
 
 let clickIndex = 0;
 let fileNames = [
-  "loadcharacters.txt",
   "titlepage.txt", 
   "intropage.txt", 
   "borderspage_01.txt", 
   "airportspage_01.txt",
   "airportspage_02.txt",
   "calatoniapage_01.txt",
+  "calatoniapage_02.txt",
   "kapwapage_01.txt",
   "foodpage_01.txt",
   "foodpage_02.txt",
+  "foodpage_03.txt",
   "languagepage_01.txt",
   "soundpage_01.txt",
   "soundpage_02.txt",
@@ -53,6 +54,7 @@ let rightLayer;
 let currScene;
 let currSceneIndex = 0;
 let currPageIndex = 0;
+let prevPageCount = 0;
 let currBoxesStartIndex = 0;
 let nextBoxesStartIndex = 0;
 let currBoxesTotHeight = 0;
@@ -109,6 +111,7 @@ function mouseClicked() {
       loadImageLayer();
     } else if(currSceneIndex > 0) {
       currSceneIndex--;
+      currPageIndex = prevPageCount;
       shouldSceneChange = true;
     } else {
       // first page is reached.. do nothing
@@ -123,10 +126,13 @@ function mouseClicked() {
         loadImageLayer();
       } else if (currSceneIndex < fileNames.length-1) {
         currSceneIndex++;
+        prevPageCount = currScene.getPageCount()-1;
+        currPageIndex = 0;
         shouldSceneChange = true;
       } else {
         // end is reached.. return to first page
         currSceneIndex = 0;
+        currPageIndex = 0;
         currBoxesStartIndex = 0;
         shouldSceneChange = true;
       }
@@ -149,17 +155,21 @@ function mouseClicked() {
 }
 
 function mouseMoved() {
-  asciiSize = floor(mouseY/30);
+  asciiSize = floor(map(mouseY, 0, height, 1, 16)) * 4;
   if(asciiSize >= 4) characterSet.setFontSize(asciiSize);
 
   shaderLayer.clear();
-  shaderLayer.background(20,30,10,100);
+  shaderLayer.background(150,150,150,100);
   shaderLayer.rect(0, 0); // idk why this works
   setShaderValues();
 }
 
 function draw() {
   // redraw when everythings loaded
+  shaderLayer.clear();
+  shaderLayer.background(150,150,150,100);
+  shaderLayer.rect(0, 0); // idk why this works
+  setShaderValues();
   //if(fileLoaded && !isDrawn) {
     //clear();
     push();
@@ -200,14 +210,20 @@ function setShaderValues() {
 }
 
 function loadSceneFromFile() {
-  currPageIndex = 0;
+  //currPageIndex = 0;
   loadedImages = [];
   let line = sceneData[0];
   fileLoaded = true;
 
   if(line.startsWith("# ")) {
     //currScene = new Scene({title: line});
-    currScene.reset(line);
+    if(currSceneIndex == 0) {
+      currScene.reset(line);
+    } else {
+      let number = allScenesData.length - 1;
+      let title = line + "(" + currSceneIndex + "/" + number +")";
+      currScene.reset(title);
+    }
   }
     
   //else
@@ -341,7 +357,7 @@ function loadImageLayer() {
   let rightImageIndex = 1;
 
   if(loadedImages.length > 2) {
-    leftImageIndex = float(random(0, loadedImages.length));
+    leftImageIndex = floor(random(0, loadedImages.length));
     if(leftImageIndex == loadedImages.length - 1) {
       rightImageIndex = 0;
     } else {
