@@ -2,5 +2,6 @@
 ## takeaways from 13 months in barcelona (and nearby places)
 click right side -> next
 press 1/2 -> reveal an image
+press r -> start of random chapter
 ![](/assets/STREETS_01_360.jpg)
 ![](/assets/BCN_0027_SIGNS_BARCELONA_01_360.jpg)

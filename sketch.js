@@ -15,11 +15,13 @@ let fileNames = [
   "airportspage_01.txt",
   "october-june.txt",
   "kapwapage_01.txt",
+  "foodpage_01.txt",
+  "grief.txt",
   "languagepage_01.txt",
   "Touristsgo.txt",
   "soundpage_01.txt",
   "calatoniapage_01.txt",
-  "foodpage_01.txt",
+  "streets.txt",
   "pi100page_01.txt",
   "leveluppage_01.txt",
   "back2startpage_01.txt", 
@@ -174,11 +176,14 @@ function keyPressed() {
   isDrawn = false;
   let shouldSceneChange = false;
   // track  left and right key presses
-  if(keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW) {
+  if(keyCode === LEFT_ARROW || keyCode === RIGHT_ARROW || keyCode === 82) {
     if(keyCode === LEFT_ARROW) {
       shouldSceneChange = leftTrigger();
     } else if (keyCode === RIGHT_ARROW) {
       shouldSceneChange = rightTrigger();
+    } else if (keyCode === 82) {
+      currSceneIndex = floor(random(1, allScenesData.length-1));
+      shouldSceneChange = true;
     }
   
     // reload files

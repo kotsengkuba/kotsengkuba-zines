@@ -9,7 +9,7 @@ v1.0
 - Buggy when window is vertical or small
 - Sometimes images fail to load, just hit refresh
 - Will probably procrastinate in fixing the bugs
-- Source code on github.com/kotsengkuba
+- Source code github.com/kotsengkuba
 
 ## About
 
