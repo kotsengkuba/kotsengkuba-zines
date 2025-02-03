@@ -6,6 +6,7 @@ const asciiSet = '@#$B%8&WM*oahkbdpqwmZO0QLCJUYXzcvunxrjft/()1{}[]?-_+~<>i!lI;:,
 
 const shadowOffset = 5;
 const margin = 10;
+const IMG_WIDTH = 360;
 
 let clickIndex = 0;
 let fileNames = [
@@ -70,6 +71,7 @@ let imageLoadingIndex = 0;
 let isMobile = false;
 let onlyTitle = true;
 let isTouch = false;
+let mobileRandImageIndex = 0;
 
 function preload() {  
   font = loadFont(fontName);
@@ -224,6 +226,10 @@ function keyPressed() {
 // Toggle colors with each touch.
 function touchStarted() {
   console.log("touch started");
+}
+
+function touchMoved() {
+  console.log("touch moved");
   isTouch = true;
 }
 
@@ -247,12 +253,7 @@ function draw() {
       image(mobileLayer, 0, 0);
       if(isTouch) {
         tint(255, 200);
-        if(onlyTitle) {
-          image(loadedImages[leftImageIndex], (width-loadedImages[leftImageIndex].width)/2, (height-loadedImages[leftImageIndex].height)/2);
-        } else {
-          image(loadedImages[rightImageIndex], (width-loadedImages[rightImageIndex].width)/2, (height-loadedImages[rightImageIndex].height)/2);
-        }
-        
+        image(loadedImages[mobileRandImageIndex], (width-IMG_WIDTH)/2, 50);
       }
     pop();
   } else {
@@ -548,12 +549,8 @@ function loadImageLayer() {
     imageLayer.push();
     imageLayer.translate(-width/2, -height/2);
     let maxYoffset = height - loadedImages[leftImageIndex].height;
-    if(currSceneIndex == 0 || onlyTitle) {
-      imageLayer.image(loadedImages[leftImageIndex], 0, random(0, maxYoffset), width);
-    } else {
-      imageLayer.image(loadedImages[rightImageIndex], 0, random(0, maxYoffset), width);
-    }
-    
+    mobileRandImageIndex = random([leftImageIndex, rightImageIndex]);
+    imageLayer.image(loadedImages[mobileRandImageIndex], 0, random(0, maxYoffset), width);
     imageLayer.pop();
   } else {
     imageLayer.clear();
