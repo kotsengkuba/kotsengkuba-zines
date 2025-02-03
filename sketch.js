@@ -84,14 +84,15 @@ function setup() {
   //console.log(allScenesData);
   sceneData = allScenesData[0];
   currScene = new Scene({title: ""});
-  p5Canvas = createCanvas(windowWidth - 10, windowHeight - 10, WEBGL);
+  p5Canvas = createCanvas(window.windowWidth - 5, window.windowHeight - 5, WEBGL);
+  console.log("canvas height = " + p5Canvas.height);
   p5Canvas.parent("main-div");
   frameRate(fps);
   background(0);
   pixelDensity(1);
 
   // set isMobile flag if screen is portrait
-  if(windowHeight > windowWidth) isMobile = true;
+  if(height > width) isMobile = true;
 
   shaderLayer = createGraphics(width, height, WEBGL);
   shaderLayer.shader(slidesShader);
@@ -126,9 +127,6 @@ function mouseClicked() {
   if(shouldSceneChange) {
     sceneData = allScenesData[currSceneIndex];
     loadSceneFromFile();
-    
-    // put flag on if mobile
-    onlyTitle = true;
   }
 
   loadPageTextBox();
@@ -137,6 +135,7 @@ function mouseClicked() {
 }
 function leftTrigger() {
   let shouldSceneChange = false;
+  onlyTitle = false;
   currBoxesStartIndex = 0;
   if(currPageIndex > 0) {
     currPageIndex--;
@@ -168,12 +167,18 @@ function rightTrigger() {
       prevPageCount = currScene.getPageCount()-1;
       currPageIndex = 0;
       shouldSceneChange = true;
+
+      // put flag on if mobile
+      onlyTitle = true;
     } else {
       // end is reached.. return to first page
       currSceneIndex = 0;
       currPageIndex = 0;
       currBoxesStartIndex = 0;
       shouldSceneChange = true;
+
+      // put flag on if mobile
+      onlyTitle = true;
     }
   } 
   return shouldSceneChange;
@@ -207,9 +212,6 @@ function keyPressed() {
     if(shouldSceneChange) {
       sceneData = allScenesData[currSceneIndex];
       loadSceneFromFile();
-      
-      // put flag on if mobile
-      onlyTitle = true;
     }
   
     loadPageTextBox();
@@ -439,23 +441,26 @@ function resetTextBoxes() {
 
       let tempY = yPos;
       let xOffset = 0;
-      let tempTotHeight = 0;
+      let tempTotHeight = tempY;
       for(let i = currBoxesStartIndex; i < textBoxes.length; i++) {
         tempTotHeight += (textBoxes[i].getHeight() + margin);
-        if(tempTotHeight < mobileLayer.height - 50) {
+        if(tempTotHeight < height) {
           xPos = margin;
-          xOffset = random(mobileLayer.width - textBoxes[i].getWidth() - 10);
+          xOffset = random(width - textBoxes[i].getWidth() - 20);
           mobileLayer.push();
           mobileLayer.translate(-mobileLayer.width/2, -mobileLayer.height/2);
           mobileLayer.image(textBoxes[i].getTexture(), xPos+xOffset, margin + tempY);
           mobileLayer.pop();
           tempY += textBoxes[i].getHeight() + 10;
           nextBoxesStartIndex = i+1;
+          console.log("text height/canvas height = " + tempTotHeight + "/" + height);
+        } else {
+          break;
         }
       }
     }
     
-  } //else {
+  } else {
     leftLayer.clear();
     rightLayer.clear();
   
@@ -491,7 +496,7 @@ function resetTextBoxes() {
         nextBoxesStartIndex = i+1;
       }
     }
-  //}
+  }
 }
 
 function loadImageLayer() {
