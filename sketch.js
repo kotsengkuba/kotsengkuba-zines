@@ -252,8 +252,9 @@ function draw() {
       image(shaderLayer, 0, 0);
       image(mobileLayer, 0, 0);
       if(isTouch) {
-        tint(255, 200);
-        image(loadedImages[mobileRandImageIndex], (width-IMG_WIDTH)/2, 50);
+        tint(255, 195);
+        if(loadedImages[mobileRandImageIndex] != undefined)
+          image(loadedImages[mobileRandImageIndex], (width-IMG_WIDTH)/2, 50);
       }
     pop();
   } else {
