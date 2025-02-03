@@ -69,6 +69,7 @@ let imageLoadingIndex = 0;
 
 let isMobile = false;
 let onlyTitle = true;
+let isTouch = false;
 
 function preload() {  
   font = loadFont(fontName);
@@ -85,7 +86,6 @@ function setup() {
   sceneData = allScenesData[0];
   currScene = new Scene({title: ""});
   p5Canvas = createCanvas(window.windowWidth - 5, window.windowHeight - 5, WEBGL);
-  console.log("canvas height = " + p5Canvas.height);
   p5Canvas.parent("main-div");
   frameRate(fps);
   background(0);
@@ -110,7 +110,7 @@ function setup() {
   //leftLayer.fill(50);
 
   loadSceneFromFile();
-  characterSet = new CharacterSet({font: font, fontSize: asciiSize, characters: asciiSet });
+  characterSet = new CharacterSet({ font: font, fontSize: asciiSize, characters: asciiSet });
 }
 
 function mouseClicked() {
@@ -221,6 +221,17 @@ function keyPressed() {
   }
 }
 
+// Toggle colors with each touch.
+function touchStarted() {
+  console.log("touch started");
+  isTouch = true;
+}
+
+function touchEnded() {
+  console.log("touch ended");
+  isTouch = false;
+}
+
 function draw() {
   // redraw when everythings loaded
   shaderLayer.clear();
@@ -234,6 +245,15 @@ function draw() {
       translate(-width/2, -height/2);
       image(shaderLayer, 0, 0);
       image(mobileLayer, 0, 0);
+      if(isTouch) {
+        tint(255, 200);
+        if(onlyTitle) {
+          image(loadedImages[leftImageIndex], (width-loadedImages[leftImageIndex].width)/2, (height-loadedImages[leftImageIndex].height)/2);
+        } else {
+          image(loadedImages[rightImageIndex], (width-loadedImages[rightImageIndex].width)/2, (height-loadedImages[rightImageIndex].height)/2);
+        }
+        
+      }
     pop();
   } else {
     clear();
@@ -453,7 +473,7 @@ function resetTextBoxes() {
           mobileLayer.pop();
           tempY += textBoxes[i].getHeight() + 10;
           nextBoxesStartIndex = i+1;
-          console.log("text height/canvas height = " + tempTotHeight + "/" + height);
+          //console.log("text height/canvas height = " + tempTotHeight + "/" + height);
         } else {
           break;
         }
@@ -528,7 +548,12 @@ function loadImageLayer() {
     imageLayer.push();
     imageLayer.translate(-width/2, -height/2);
     let maxYoffset = height - loadedImages[leftImageIndex].height;
-    imageLayer.image(loadedImages[leftImageIndex], 0, random(0, maxYoffset), width);
+    if(currSceneIndex == 0 || onlyTitle) {
+      imageLayer.image(loadedImages[leftImageIndex], 0, random(0, maxYoffset), width);
+    } else {
+      imageLayer.image(loadedImages[rightImageIndex], 0, random(0, maxYoffset), width);
+    }
+    
     imageLayer.pop();
   } else {
     imageLayer.clear();
