@@ -1,18 +1,17 @@
 # intro
-## Release notes
+## release notes
 ![](/assets/TILES_01_360.jpg)
 ![](/assets/BCN_0032_NOUBARRIS_MINNIE_01_360.jpg)
-v1.0
+v1.1
 - Best viewed in chrome on a computer
-- Buggy in mobile
-- Buggy when window is vertical or small
 - Sometimes images fail to load, just hit refresh
+- Minor text edits
 - Will probably procrastinate in fixing the bugs
 - Source code github.com/kotsengkuba
 
-© 2025
+© 2025 Minnie Pangilinan
 
-## About
+## about
 ![](/assets/TILES_01_360.jpg)
 ![](/assets/STREETS_04_360.jpg)
 Here I present snippets of thoughts, memories, reflections about my 13-month trip. Manila to Barcelona and some other nearby places.  Mostly in english, with little bits of taglish (tagalog + english) and attempts at spanish. 
@@ -26,15 +25,15 @@ Warning: this is quite long, feel free to just browse and bounce around
 ![](/assets/BCN_0015_SIGNS_NOMAMES_01_360.jpg)
 I started compiling and writing as I welcomed myself to New York city. That past 24 hours was heavy. I needed to set a direction and some goals:
 
-- to make a bad/mid zine
+- to create a bad/mid zine
 - to make kwento
 - to thank all those who have welcomed me in barcelona!
 
 New York has allowed for time and space; distraction, reflection; in calm and chaos - witnessing Trump’s re-election and getting hit by a car!
 
-I finish this as I leave Texas and go home.
+I finish this as I leave Texas and go back home.
 
-## Travel
+## travel
 ![](/assets/BCN_0004_SPAIN_THINGS_01_360.jpg)
 ![](/assets/BCN_0016_FLOWERS_01_360.jpg)
 I am not really a traveler. Prior to this trip, I didn’t move a lot. The longest that I’ve been away from home was maybe a month. For me, it is inconvenient and a waste of resources. International travel is just so expensive and requires a ton of paperwork, as I’ll very much point out here. I'd soon realize that there might be things that make it worth it. 

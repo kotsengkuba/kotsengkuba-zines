@@ -28,11 +28,6 @@ let fileNames = [
   "back2startpage_01.txt", 
   "extras.txt"
 ];
-/*let fileNames = [
-  "intropage.txt",
-  "titlepage.txt", 
-  "intropage.txt"
-];*/
 
 let textBoxes = [];
 let sceneTitleTextBox;
@@ -105,11 +100,6 @@ function setup() {
   if(isMobile) {
     mobileLayer = createGraphics(width, height, WEBGL)
   }
-  
-  //leftLayer.textFont(font);
-  //leftLayer.textSize(defaultFontSize);
-  //leftLayer.textAlign(LEFT, TOP);
-  //leftLayer.fill(50);
 
   loadSceneFromFile();
   characterSet = new CharacterSet({ font: font, fontSize: asciiSize, characters: asciiSet });
@@ -378,19 +368,11 @@ function loadSceneFromFile() {
     currScene.addPage(tempPage.title, tempPage.text, tempPage.imArr);
   }
 
-  /*for(let i = 0; i < currScene.images.length; i++) {
-    let tempImage = loadImage(currScene.images[i], loadImagesCallback);
-  }*/
-
-  //console.log(currScene);
   loadPageImages();
   resetTextBoxes();
 }
 
 function loadPageImages() {
-  /*for(let i = 0; i < currScene.images.length; i++) {
-    loadImage(currScene.images[i], loadImagesCallback);
-  }*/
   loadImage(currScene.images[imageLoadingIndex], loadImagesCallback);
 }
 
@@ -528,9 +510,6 @@ function loadImageLayer() {
 
   // get how many images in page
   let pageImgCount = currScene.getPageImageCount(currPageIndex);
-  //console.log(currScene);
-  //console.log(currPageIndex);
-  //console.log(pageImgCount);
   let pimIndex = currScene.getImageIndexOf(currScene.getPageImage(currPageIndex, 0));
   if(pimIndex != -1) {
     leftImageIndex = pimIndex;
