@@ -49,6 +49,7 @@ let shaderLayer;
 let imageLayer;
 let leftLayer;
 let rightLayer;
+let mobileLayer;
 
 let currScene;
 let currSceneIndex = 0;
@@ -65,6 +66,8 @@ let allScenesData = [];
 let leftImageIndex = 0;
 let rightImageIndex = 0;
 let imageLoadingIndex = 0;
+
+let isMobile = false;
 
 function preload() {  
   font = loadFont(fontName);
@@ -86,16 +89,23 @@ function setup() {
   background(0);
   pixelDensity(1);
 
+  // set isMobile flag if screen is portrait
+  if(windowHeight > windowWidth) isMobile = true;
+
   shaderLayer = createGraphics(width, height, WEBGL);
   shaderLayer.shader(slidesShader);
   imageLayer = createGraphics(width, height, WEBGL);
   leftLayer = createGraphics(width/2, height, WEBGL);
   rightLayer = createGraphics(width/2, height*2, WEBGL);
+
+  if(isMobile) {
+    mobileLayer = createGraphics(width, height, WEBGL)
+  }
   
-  leftLayer.textFont(font);
-  leftLayer.textSize(defaultFontSize);
-  leftLayer.textAlign(LEFT, TOP);
-  leftLayer.fill(50);
+  //leftLayer.textFont(font);
+  //leftLayer.textSize(defaultFontSize);
+  //leftLayer.textAlign(LEFT, TOP);
+  //leftLayer.fill(50);
 
   loadSceneFromFile();
   characterSet = new CharacterSet({font: font, fontSize: asciiSize, characters: asciiSet });
@@ -119,7 +129,6 @@ function mouseClicked() {
 
   loadPageTextBox();
   loadTextBoxes();
-
   resetTextBoxes();
 }
 function leftTrigger() {
@@ -206,30 +215,33 @@ function draw() {
   shaderLayer.background(150,150,150,100);
   shaderLayer.rect(0, 0); // idk why this works
   setShaderValues();
-  //if(fileLoaded && !isDrawn) {
+
+  if(isMobile) {
     clear();
     push();
-    translate(-width/2, -height/2);
-    image(shaderLayer, 0, 0);
-    if (!keyIsDown(49)) {
-      image(leftLayer, 0, 0);
-    } else {
-      tint(255, 127);
-      image(loadedImages[leftImageIndex], 0, (height-loadedImages[leftImageIndex].height)/2);
-    }
-    if (!keyIsDown(50)) {
-      image(rightLayer, width/2, 0);
-    } else {
-      tint(255, 127);
-      image(loadedImages[rightImageIndex], width/2, (height-loadedImages[rightImageIndex].height)/2);
-    }
-    
-    //image(leftLayer, 0, 0);
-    //image(rightLayer, width/2, 0);
+      translate(-width/2, -height/2);
+      image(shaderLayer, 0, 0);
+      image(mobileLayer, 0, 0);
     pop();
-    
-    //isDrawn = true;
-  //}
+  } else {
+    clear();
+    push();
+      translate(-width/2, -height/2);
+      image(shaderLayer, 0, 0);
+      if (!keyIsDown(49)) {
+        image(leftLayer, 0, 0);
+      } else {
+        tint(255, 127);
+        image(loadedImages[leftImageIndex], 0, (height-loadedImages[leftImageIndex].height)/2);
+      }
+      if (!keyIsDown(50)) {
+        image(rightLayer, width/2, 0);
+      } else {
+        tint(255, 127);
+        image(loadedImages[rightImageIndex], width/2, (height-loadedImages[rightImageIndex].height)/2);
+      }
+    pop();
+  }
 }
 
 function setShaderValues() {
@@ -362,65 +374,106 @@ function loadImagesCallback(data) {
   }
 }
 
+function loadSceneTitleTextBox() {
+  let w = 200;
+  if(isMobile) w = mobileLayer.width - 40;
+  sceneTitleTextBox = new TextBox({text: currScene.title, font: font, fontSize: defaultFontSize, width: w, padding: 10, hasShadow: true});
+}
+
 function loadPageTextBox() {
+  let w = 200;
+  if(isMobile) w = mobileLayer.width - 40;
   if(pageTitleTextBox == undefined) {
-    pageTitleTextBox = new TextBox({text: currScene.getPage(currPageIndex).title, font: font, fontSize: defaultFontSize, width: 200, padding: 10, hasShadow: true});
+    pageTitleTextBox = new TextBox({text: currScene.getPage(currPageIndex).title, font: font, fontSize: defaultFontSize, width: w, padding: 10, hasShadow: true});
   } else {
     pageTitleTextBox.setText(currScene.getPage(currPageIndex).title);
-    //pageTitleTextBox.setText("ABCDEF");
   }
 }
 
 function loadTextBoxes() {
   textBoxes = [];
-  let tempPage = currScene.getPage(currPageIndex);    
+  let tempPage = currScene.getPage(currPageIndex);
+  let textBoxWidth = width/4;
+  if(isMobile) {
+    textBoxWidth = width/2;
+  } 
   for(let j = 0; j < tempPage.texts.length; j++) {
-    let tempTextBox = new TextBox({text: tempPage.texts[j], font: font, fontSize: defaultFontSize, width: width/4, padding: 10, hasShadow: true});
+    let tempTextBox = new TextBox({text: tempPage.texts[j], font: font, fontSize: defaultFontSize, width: textBoxWidth, padding: 10, hasShadow: true});
     textBoxes.push(tempTextBox);
   }
 }
 
 
 function resetTextBoxes() {
-  sceneTitleTextBox = new TextBox({text: currScene.title, font: font, fontSize: defaultFontSize, width: 200, padding: 10, hasShadow: true});
+  loadSceneTitleTextBox();
   loadPageTextBox();
   loadTextBoxes();
+  if(isMobile) {
+    mobileLayer.clear();
+    let xPos = 10;
+    let yPos = 10;
 
-  leftLayer.clear();
-  rightLayer.clear();
+    mobileLayer.push();
+    mobileLayer.translate(-mobileLayer.width/2, -mobileLayer.height/2);
+    mobileLayer.image(sceneTitleTextBox.getTexture(), xPos, yPos);
+    yPos += sceneTitleTextBox.getHeight() + 10;
+    mobileLayer.image(pageTitleTextBox.getTexture(), xPos, yPos);
+    yPos += pageTitleTextBox.getHeight() + 10;
+    mobileLayer.pop();
 
-  let xPos = (leftLayer.width-sceneTitleTextBox.getWidth())/2;
-  let yPos = (leftLayer.height-sceneTitleTextBox.getHeight())/2;
-  //.draw(leftLayer, 0, 0, false);
-  leftLayer.push();
-  leftLayer.translate(-leftLayer.width/2, -leftLayer.height/2);
-  leftLayer.image(sceneTitleTextBox.getTexture(), 10, 10);
-  leftLayer.pop();
-
-  xPos = (leftLayer.width-pageTitleTextBox.getWidth())/2;
-  yPos = (leftLayer.width-pageTitleTextBox.getHeight())/2;
-  //pageTitleTextBox.draw(leftLayer, xPos, yPos, false);
-  leftLayer.push();
-  leftLayer.translate(-leftLayer.width/2, -leftLayer.height/2);
-  leftLayer.image(pageTitleTextBox.getTexture(), xPos, yPos);
-  leftLayer.pop();
-
-  let tempY = 0;
-  let xOffset = 0;
-  let tempTotHeight = 0;
-  for(let i = currBoxesStartIndex; i < textBoxes.length; i++) {
-    tempTotHeight += (textBoxes[i].getHeight() + margin);
-    if(tempTotHeight < height) {
-      xPos = margin;
-      xOffset = random(textBoxes[i].getWidth()/2);
-      rightLayer.push();
-      rightLayer.translate(-rightLayer.width/2, -rightLayer.height/2);
-      rightLayer.image(textBoxes[i].getTexture(), xPos+xOffset, margin + tempY);
-      rightLayer.pop();
-      tempY += textBoxes[i].getHeight() + 10;
-      nextBoxesStartIndex = i+1;
+    let tempY = yPos;
+    let xOffset = 0;
+    let tempTotHeight = 0;
+    for(let i = currBoxesStartIndex; i < textBoxes.length; i++) {
+      tempTotHeight += (textBoxes[i].getHeight() + margin);
+      if(tempTotHeight < mobileLayer.height) {
+        xPos = margin;
+        xOffset = random(textBoxes[i].getWidth()/2);
+        mobileLayer.push();
+        mobileLayer.translate(-mobileLayer.width/2, -mobileLayer.height/2);
+        mobileLayer.image(textBoxes[i].getTexture(), xPos+xOffset, margin + tempY);
+        mobileLayer.pop();
+        tempY += textBoxes[i].getHeight() + 10;
+        nextBoxesStartIndex = i+1;
+      }
     }
-  }
+  } //else {
+    leftLayer.clear();
+    rightLayer.clear();
+  
+    let xPos = (leftLayer.width-sceneTitleTextBox.getWidth())/2;
+    let yPos = (leftLayer.height-sceneTitleTextBox.getHeight())/2;
+    //.draw(leftLayer, 0, 0, false);
+    leftLayer.push();
+    leftLayer.translate(-leftLayer.width/2, -leftLayer.height/2);
+    leftLayer.image(sceneTitleTextBox.getTexture(), 10, 10);
+    leftLayer.pop();
+  
+    xPos = (leftLayer.width-pageTitleTextBox.getWidth())/2;
+    yPos = (leftLayer.width-pageTitleTextBox.getHeight())/2;
+    
+    leftLayer.push();
+    leftLayer.translate(-leftLayer.width/2, -leftLayer.height/2);
+    leftLayer.image(pageTitleTextBox.getTexture(), xPos, yPos);
+    leftLayer.pop();
+  
+    let tempY = 0;
+    let xOffset = 0;
+    let tempTotHeight = 0;
+    for(let i = currBoxesStartIndex; i < textBoxes.length; i++) {
+      tempTotHeight += (textBoxes[i].getHeight() + margin);
+      if(tempTotHeight < height) {
+        xPos = margin;
+        xOffset = random(textBoxes[i].getWidth()/2);
+        rightLayer.push();
+        rightLayer.translate(-rightLayer.width/2, -rightLayer.height/2);
+        rightLayer.image(textBoxes[i].getTexture(), xPos+xOffset, margin + tempY);
+        rightLayer.pop();
+        tempY += textBoxes[i].getHeight() + 10;
+        nextBoxesStartIndex = i+1;
+      }
+    }
+  //}
 }
 
 function loadImageLayer() {
@@ -447,9 +500,9 @@ function loadImageLayer() {
     rightImageIndex = floor(random(0, loadedImages.length));
   }
   
-  console.log(leftImageIndex);
-  console.log(leftImageIndex + ", " +rightImageIndex);
-  console.log("loadedImages length " + loadedImages.length);
+  //console.log(leftImageIndex);
+  //console.log(leftImageIndex + ", " +rightImageIndex);
+  //console.log("loadedImages length " + loadedImages.length);
 
   /*if(loadedImages.length > 2) {
     leftImageIndex = floor(random(0, loadedImages.length));
