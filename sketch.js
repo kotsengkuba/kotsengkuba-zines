@@ -68,6 +68,7 @@ let rightImageIndex = 0;
 let imageLoadingIndex = 0;
 
 let isMobile = false;
+let onlyTitle = true;
 
 function preload() {  
   font = loadFont(fontName);
@@ -125,6 +126,9 @@ function mouseClicked() {
   if(shouldSceneChange) {
     sceneData = allScenesData[currSceneIndex];
     loadSceneFromFile();
+    
+    // put flag on if mobile
+    onlyTitle = true;
   }
 
   loadPageTextBox();
@@ -149,7 +153,10 @@ function leftTrigger() {
 
 function rightTrigger() {
   let shouldSceneChange = false;
-  if(nextBoxesStartIndex < textBoxes.length) {
+  if(isMobile && onlyTitle) {
+    currBoxesStartIndex = 0;
+    onlyTitle = false;
+  } else if(nextBoxesStartIndex < textBoxes.length) {
     currBoxesStartIndex = nextBoxesStartIndex;
   } else {
     currBoxesStartIndex = 0;
@@ -200,6 +207,9 @@ function keyPressed() {
     if(shouldSceneChange) {
       sceneData = allScenesData[currSceneIndex];
       loadSceneFromFile();
+      
+      // put flag on if mobile
+      onlyTitle = true;
     }
   
     loadPageTextBox();
@@ -395,7 +405,7 @@ function loadTextBoxes() {
   let tempPage = currScene.getPage(currPageIndex);
   let textBoxWidth = width/4;
   if(isMobile) {
-    textBoxWidth = width/2;
+    textBoxWidth = width - 100;
   } 
   for(let j = 0; j < tempPage.texts.length; j++) {
     let tempTextBox = new TextBox({text: tempPage.texts[j], font: font, fontSize: defaultFontSize, width: textBoxWidth, padding: 10, hasShadow: true});
@@ -416,27 +426,35 @@ function resetTextBoxes() {
     mobileLayer.push();
     mobileLayer.translate(-mobileLayer.width/2, -mobileLayer.height/2);
     mobileLayer.image(sceneTitleTextBox.getTexture(), xPos, yPos);
-    yPos += sceneTitleTextBox.getHeight() + 10;
-    mobileLayer.image(pageTitleTextBox.getTexture(), xPos, yPos);
-    yPos += pageTitleTextBox.getHeight() + 10;
     mobileLayer.pop();
 
-    let tempY = yPos;
-    let xOffset = 0;
-    let tempTotHeight = 0;
-    for(let i = currBoxesStartIndex; i < textBoxes.length; i++) {
-      tempTotHeight += (textBoxes[i].getHeight() + margin);
-      if(tempTotHeight < mobileLayer.height) {
-        xPos = margin;
-        xOffset = random(textBoxes[i].getWidth()/2);
-        mobileLayer.push();
-        mobileLayer.translate(-mobileLayer.width/2, -mobileLayer.height/2);
-        mobileLayer.image(textBoxes[i].getTexture(), xPos+xOffset, margin + tempY);
-        mobileLayer.pop();
-        tempY += textBoxes[i].getHeight() + 10;
-        nextBoxesStartIndex = i+1;
+    if(!onlyTitle || currSceneIndex == 0) {
+      mobileLayer.push();
+      mobileLayer.translate(-mobileLayer.width/2, -mobileLayer.height/2);
+      yPos += sceneTitleTextBox.getHeight() + 10;
+      mobileLayer.image(pageTitleTextBox.getTexture(), xPos, yPos);
+      yPos += pageTitleTextBox.getHeight() + 10;
+      mobileLayer.pop();
+
+
+      let tempY = yPos;
+      let xOffset = 0;
+      let tempTotHeight = 0;
+      for(let i = currBoxesStartIndex; i < textBoxes.length; i++) {
+        tempTotHeight += (textBoxes[i].getHeight() + margin);
+        if(tempTotHeight < mobileLayer.height - 50) {
+          xPos = margin;
+          xOffset = random(mobileLayer.width - textBoxes[i].getWidth() - 10);
+          mobileLayer.push();
+          mobileLayer.translate(-mobileLayer.width/2, -mobileLayer.height/2);
+          mobileLayer.image(textBoxes[i].getTexture(), xPos+xOffset, margin + tempY);
+          mobileLayer.pop();
+          tempY += textBoxes[i].getHeight() + 10;
+          nextBoxesStartIndex = i+1;
+        }
       }
     }
+    
   } //else {
     leftLayer.clear();
     rightLayer.clear();
@@ -500,30 +518,24 @@ function loadImageLayer() {
     rightImageIndex = floor(random(0, loadedImages.length));
   }
   
-  //console.log(leftImageIndex);
-  //console.log(leftImageIndex + ", " +rightImageIndex);
-  //console.log("loadedImages length " + loadedImages.length);
-
-  /*if(loadedImages.length > 2) {
-    leftImageIndex = floor(random(0, loadedImages.length));
-    if(leftImageIndex == loadedImages.length - 1) {
-      rightImageIndex = 0;
-    } else {
-      rightImageIndex = leftImageIndex+1;
-    }
-  } else if (loadedImages.length == 1) {
-    rightImageIndex = 0;
-  }*/
-
-  imageLayer.clear();
-  imageLayer.push();
-  imageLayer.translate(-width/2, -height/2);
-
-  loadedImages[leftImageIndex].resize(width/2, 0);
-  loadedImages[rightImageIndex].resize(width/2, 0);
-
-  let maxYoffset = height - loadedImages[leftImageIndex].height;
-  imageLayer.image(loadedImages[leftImageIndex], 0, random(0, maxYoffset), width/2);
-  imageLayer.image(loadedImages[rightImageIndex], width/2, random(0, maxYoffset), width/2);
-  imageLayer.pop();
+  if(isMobile) {
+    imageLayer.clear();
+    imageLayer.push();
+    imageLayer.translate(-width/2, -height/2);
+    let maxYoffset = height - loadedImages[leftImageIndex].height;
+    imageLayer.image(loadedImages[leftImageIndex], 0, random(0, maxYoffset), width);
+    imageLayer.pop();
+  } else {
+    imageLayer.clear();
+    imageLayer.push();
+    imageLayer.translate(-width/2, -height/2);
+  
+    loadedImages[leftImageIndex].resize(width/2, 0);
+    loadedImages[rightImageIndex].resize(width/2, 0);
+  
+    let maxYoffset = height - loadedImages[leftImageIndex].height;
+    imageLayer.image(loadedImages[leftImageIndex], 0, random(0, maxYoffset), width/2);
+    imageLayer.image(loadedImages[rightImageIndex], width/2, random(0, maxYoffset), width/2);
+    imageLayer.pop();
+  }
 }
